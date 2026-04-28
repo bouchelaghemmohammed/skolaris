@@ -13,5 +13,9 @@
         public string Role { get; set; } = string.Empty;
 
         public bool IsActive { get; set; } = true;
+
+        public string? ResetPasswordToken { get; set; }
+
+        public DateTime? ResetPasswordTokenExpiry { get; set; }
     }
 }

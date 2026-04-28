@@ -1,4 +1,5 @@
-﻿using Skolaris.Data;
+using Skolaris.Data;
+using Skolaris.Enums;
 using Skolaris.ViewModels;
 
 namespace Skolaris.Services
@@ -14,13 +15,13 @@ namespace Skolaris.Services
 
         public List<UserListViewModel> GetAllUsers()
         {
-            return _context.Users
+            return _context.Utilisateurs
                 .Select(u => new UserListViewModel
                 {
-                    Id = u.Id,
-                    Nom = u.Nom,
+                    Id = u.IdUtilisateur,
+                    Nom = u.Prenom + " " + u.Nom,
                     Email = u.Email,
-                    Role = u.Role,
+                    Role = u.Role.ToString(),
                     IsActive = u.IsActive
                 })
                 .ToList();
@@ -28,40 +29,25 @@ namespace Skolaris.Services
 
         public bool ToggleActive(int id, int currentUserId)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Id == id);
-
-            if (user == null)
-                return false;
-
-            if (user.Id == currentUserId)
-                return false;
+            var user = _context.Utilisateurs.FirstOrDefault(u => u.IdUtilisateur == id);
+            if (user == null) return false;
+            if (user.IdUtilisateur == currentUserId) return false;
 
             user.IsActive = !user.IsActive;
             _context.SaveChanges();
-
             return true;
         }
 
         public bool ChangeRole(int id, string role)
         {
-            var rolesValides = new List<string>
-            {
-                "ADMIN",
-                "ENSEIGNANT",
-                "ELEVE"
-            };
-
-            if (!rolesValides.Contains(role))
+            if (!Enum.TryParse<Role>(role, true, out var roleEnum))
                 return false;
 
-            var user = _context.Users.FirstOrDefault(u => u.Id == id);
+            var user = _context.Utilisateurs.FirstOrDefault(u => u.IdUtilisateur == id);
+            if (user == null) return false;
 
-            if (user == null)
-                return false;
-
-            user.Role = role;
+            user.Role = roleEnum;
             _context.SaveChanges();
-
             return true;
         }
     }
