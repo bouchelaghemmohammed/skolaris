@@ -7,6 +7,9 @@ namespace Skolaris.Models
         public int IdNote { get; set; }
         public decimal Valeur { get; set; }
         public TypeNote Type { get; set; }
+        public string? Description { get; set; }
+        public decimal Ponderation { get; set; }
+        public DateTime DateEvaluation { get; set; } = DateTime.UtcNow;
         public int IdEleve { get; set; }
         public int IdCoursOffert { get; set; }
 

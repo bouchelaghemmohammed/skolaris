@@ -154,6 +154,8 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.IdNote);
             entity.Property(e => e.Valeur).HasPrecision(4, 2);
             entity.Property(e => e.Type).HasConversion<string>();
+            entity.Property(e => e.Description).HasMaxLength(200);
+            entity.Property(e => e.Ponderation).HasPrecision(5, 2);
             entity.HasOne(e => e.Eleve).WithMany(e => e.Notes).HasForeignKey(e => e.IdEleve);
             entity.HasOne(e => e.CoursOffert).WithMany(e => e.Notes).HasForeignKey(e => e.IdCoursOffert);
         });

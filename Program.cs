@@ -24,6 +24,8 @@ builder.Services.AddScoped<SessionAcademiqueService>();
 builder.Services.AddScoped<DossierAcademiqueService>();
 builder.Services.AddScoped<AbsenceService>();
 builder.Services.AddScoped<InscriptionService>();
+builder.Services.AddScoped<NoteService>();
+builder.Services.AddScoped<BulletinService>();
 
 builder.Services.AddCors(options =>
 {
