@@ -9,7 +9,7 @@ namespace Skolaris.Models
         public int IdGroupe { get; set; }
         public int IdSession { get; set; }
         public int? IdEnseignant { get; set; }
-        public ModeEnseignement ModeEnseignement { get; set; } = ModeEnseignement.Presentiel;
+        public ModeEnseignement ModeEnseignement { get; set; } = ModeEnseignement.Présentiel;
 
         public Cours Cours { get; set; } = null!;
         public Groupe Groupe { get; set; } = null!;

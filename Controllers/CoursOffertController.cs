@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Skolaris.Data;
 using Skolaris.Models;
 using System.Linq;
@@ -20,7 +21,20 @@ namespace Skolaris.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var coursOfferts = _context.CoursOfferts.ToList();
+            var coursOfferts = _context.CoursOfferts
+                .Include(co => co.Cours)
+                .Select(co => new
+                {
+                    IdCoursOffert = co.IdCoursOffert,
+                    IdCours = co.IdCours,
+                    IdGroupe = co.IdGroupe,
+                    IdSession = co.IdSession,
+                    IdEnseignant = co.IdEnseignant,
+                    ModeEnseignement = co.ModeEnseignement,
+                    NomCours = co.Cours.Nom
+                })
+                .ToList();
+
             return Ok(coursOfferts);
         }
 

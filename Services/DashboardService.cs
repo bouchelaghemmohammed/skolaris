@@ -22,7 +22,9 @@ namespace Skolaris.Services
                 TotalEnseignants = _context.Utilisateurs.Count(u => u.Role == Role.ENSEIGNANT),
                 TotalEleves = _context.Utilisateurs.Count(u => u.Role == Role.ELEVE),
                 ActiveUsers = _context.Utilisateurs.Count(u => u.IsActive),
-                InactiveUsers = _context.Utilisateurs.Count(u => !u.IsActive)
+                InactiveUsers = _context.Utilisateurs.Count(u => !u.IsActive),
+                TotalInscriptions = _context.Inscriptions.Count(),
+                TotalAbsences = _context.Absences.Count()
             };
         }
     }

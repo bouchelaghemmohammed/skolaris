@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Skolaris.Dto;
 using Skolaris.Models;
 using Skolaris.Services;
 
@@ -32,6 +33,13 @@ namespace Skolaris.Controllers
             return Ok(absence);
         }
 
+        // GET: api/absences/eleve/{idEleve}
+        [HttpGet("eleve/{idEleve}")]
+        public IActionResult GetAbsencesByEleve(int idEleve)
+        {
+            return Ok(_absenceService.GetAbsencesByEleve(idEleve));
+        }
+
         // GET: api/absences/user/{userId}
         [HttpGet("user/{userId}")]
         public IActionResult GetAbsencesByUser(int userId)
@@ -48,8 +56,17 @@ namespace Skolaris.Controllers
 
         // POST: api/absences — Input présence/absence (ABS-01)
         [HttpPost]
-        public IActionResult CreateAbsence([FromBody] Absence absence)
+        public IActionResult CreateAbsence([FromBody] CreateAbsenceDto dto)
         {
+            var absence = new Absence
+            {
+                Type = dto.Type,
+                Statut = dto.Statut,
+                DateAbsence = dto.DateAbsence,
+                IdEleve = dto.IdEleve,
+                IdCoursOffert = dto.IdCoursOffert
+            };
+
             var result = _absenceService.CreateAbsence(absence);
             if (!result)
                 return BadRequest("Utilisateur introuvable.");

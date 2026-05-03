@@ -2,7 +2,7 @@ namespace Skolaris.Enums
 {
     public enum ModeEnseignement
     {
-        Presentiel,
+        Présentiel,
         EnLigne,
         Hybride
     }

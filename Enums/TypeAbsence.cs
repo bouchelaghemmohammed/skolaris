@@ -2,7 +2,8 @@ namespace Skolaris.Enums
 {
     public enum TypeAbsence
     {
-        Justifiee,
-        NonJustifiee
+       Absence,
+       Retard,
+       Maladie
     }
 }

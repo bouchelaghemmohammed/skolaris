@@ -13,5 +13,9 @@ namespace Skolaris.ViewModels
         public int ActiveUsers { get; set; }
 
         public int InactiveUsers { get; set; }
+
+        public int TotalInscriptions { get; set; }
+
+        public int TotalAbsences { get; set; }
     }
 }

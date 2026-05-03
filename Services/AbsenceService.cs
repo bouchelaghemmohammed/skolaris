@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Skolaris.Data;
 using Skolaris.Models;
 
@@ -22,10 +23,21 @@ namespace Skolaris.Services
             return _context.Absences.FirstOrDefault(a => a.IdAbsence == id);
         }
 
-        public List<Absence> GetAbsencesByUser(int userId)
+        public List<Absence> GetAbsencesByEleve(int idEleve)
         {
             return _context.Absences
-                .Where(a => a.IdEleve == userId)
+                .Where(a => a.IdEleve == idEleve)
+                .ToList();
+        }
+
+        public List<Absence> GetAbsencesByUser(int userId)
+        {
+            var eleve = _context.Eleves.AsNoTracking().FirstOrDefault(e => e.IdUtilisateur == userId);
+            if (eleve == null) return new List<Absence>();
+
+            return _context.Absences
+                .AsNoTracking()
+                .Where(a => a.IdEleve == eleve.IdEleve)
                 .ToList();
         }
 

@@ -13,8 +13,8 @@ namespace Skolaris.Models
         public int IdEleve { get; set; }
         public int IdCoursOffert { get; set; }
 
-        public Eleve Eleve { get; set; } = null!;
-        public CoursOffert CoursOffert { get; set; } = null!;
+        public Eleve? Eleve { get; set; }
+        public CoursOffert? CoursOffert { get; set; }
         public JustificationAbsence? Justification { get; set; }
     }
 }

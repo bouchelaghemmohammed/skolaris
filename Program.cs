@@ -5,7 +5,14 @@ using Skolaris.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+// Enum conversion
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+        options.JsonSerializerOptions.Converters
+        .Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -26,6 +33,7 @@ builder.Services.AddScoped<AbsenceService>();
 builder.Services.AddScoped<InscriptionService>();
 builder.Services.AddScoped<NoteService>();
 builder.Services.AddScoped<BulletinService>();
+
 
 builder.Services.AddCors(options =>
 {

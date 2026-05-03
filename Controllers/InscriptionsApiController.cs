@@ -19,7 +19,15 @@ namespace Skolaris.Controllers
         [HttpGet]
         public IActionResult GetInscriptions()
         {
-            return Ok(_inscriptionService.GetAllInscriptions());
+            var result = _inscriptionService.GetAllInscriptions()
+                .Select(i => new
+                {
+                    i.IdInscription,
+                    i.IdEleve,
+                    i.IdCoursOffert,
+                    i.DateInscription
+                });
+            return Ok(result);
         }
 
         // GET: api/inscriptions/{id}

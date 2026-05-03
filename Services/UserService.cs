@@ -52,7 +52,7 @@ namespace Skolaris.Services
         }
 
         // ADM-11 Mise a jour profil
-        public bool UpdateProfile(int id, string nom, string email)
+        public bool UpdateProfile(int id, string prenom, string nom, string email)
         {
             if (string.IsNullOrWhiteSpace(nom) || string.IsNullOrWhiteSpace(email))
                 return false;
@@ -64,6 +64,7 @@ namespace Skolaris.Services
             if (user == null)
                 return false;
 
+            user.Prenom = string.IsNullOrWhiteSpace(prenom) ? user.Prenom : prenom;
             user.Nom = nom;
             user.Email = email;
 

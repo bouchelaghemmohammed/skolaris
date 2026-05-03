@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Skolaris.Models
 {
     public class Inscription
@@ -15,10 +17,10 @@ namespace Skolaris.Models
 
         public DateTime DateInscription { get; set; } = DateTime.UtcNow;
 
-        
-
+        [ValidateNever]
         public Eleve Eleve { get; set; } = null!;
 
+        [ValidateNever]
         public CoursOffert CoursOffert { get; set; } = null!;
     }
 }

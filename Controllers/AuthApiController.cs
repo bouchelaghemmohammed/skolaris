@@ -1,4 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Skolaris.Enums;
+using Skolaris.Models;
 using Skolaris.Services;
 
 namespace Skolaris.Controllers
@@ -61,6 +65,7 @@ namespace Skolaris.Controllers
 
             return Ok(new { Success = true });
         }
+        
     }
 
     public class LoginRequest

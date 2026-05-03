@@ -18,7 +18,7 @@ namespace Skolaris.Controllers
         [HttpPut("{id}")]
         public IActionResult UpdateProfile(int id, [FromBody] UpdateProfileRequest request)
         {
-            var result = _userService.UpdateProfile(id, request.Nom, request.Email);
+            var result = _userService.UpdateProfile(id, request.Prenom, request.Nom, request.Email);
             if (!result)
                 return BadRequest("Mise à jour impossible (utilisateur introuvable ou email invalide).");
             return Ok();
@@ -27,6 +27,7 @@ namespace Skolaris.Controllers
 
     public class UpdateProfileRequest
     {
+        public string Prenom { get; set; } = "";
         public string Nom { get; set; } = "";
         public string Email { get; set; } = "";
     }
