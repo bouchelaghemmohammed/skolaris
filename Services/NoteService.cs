@@ -189,6 +189,89 @@ namespace Skolaris.Services
             return Math.Round(sommePondereeNotes / sommePondsNotes, 2);
         }
 
+        // NOT-06 : Statistiques de classe pour un cours offert donné.
+        // Calcule moyenne, médiane, min, max, distribution par mention et écart-type
+        // basés sur la note finale (CalculerNoteFinale) de chaque élève inscrit.
+        public StatistiquesClasseViewModel? CalculerStatistiquesClasse(int idCoursOffert)
+        {
+            var coursOffert = _context.CoursOfferts
+                .Include(co => co.Cours)
+                .Include(co => co.Groupe)
+                .Include(co => co.Session)
+                .FirstOrDefault(co => co.IdCoursOffert == idCoursOffert);
+            if (coursOffert == null) return null;
+
+            var inscriptionsEleves = _context.Inscriptions
+                .Include(i => i.Eleve).ThenInclude(e => e.Utilisateur)
+                .Where(i => i.IdCoursOffert == idCoursOffert)
+                .ToList();
+
+            var resultats = new List<EleveResultatViewModel>();
+            foreach (var i in inscriptionsEleves)
+            {
+                var moy = CalculerNoteFinale(i.IdEleve, idCoursOffert);
+                resultats.Add(new EleveResultatViewModel
+                {
+                    IdEleve = i.IdEleve,
+                    NomComplet = $"{i.Eleve.Utilisateur.Prenom} {i.Eleve.Utilisateur.Nom}",
+                    Matricule = i.Eleve.Matricule,
+                    NoteFinale = moy
+                });
+            }
+
+            var notesValides = resultats.Where(r => r.NoteFinale.HasValue).Select(r => r.NoteFinale!.Value).OrderBy(v => v).ToList();
+
+            var stats = new StatistiquesClasseViewModel
+            {
+                IdCoursOffert = idCoursOffert,
+                CoursNom = coursOffert.Cours.Nom,
+                CoursCode = coursOffert.Cours.Code ?? "",
+                GroupeNom = coursOffert.Groupe.Nom,
+                SessionLibelle = coursOffert.Session.Libelle,
+                NombreInscrits = resultats.Count,
+                NombreNotes = notesValides.Count,
+                Eleves = resultats.OrderByDescending(r => r.NoteFinale ?? -1).ToList()
+            };
+
+            if (notesValides.Count > 0)
+            {
+                stats.Moyenne = Math.Round(notesValides.Average(), 2);
+                stats.Mediane = CalculerMediane(notesValides);
+                stats.Minimum = notesValides.First();
+                stats.Maximum = notesValides.Last();
+                stats.EcartType = CalculerEcartType(notesValides, stats.Moyenne.Value);
+
+                stats.Distribution = new DistributionMention
+                {
+                    Excellent = notesValides.Count(v => v >= 90),
+                    TresBien = notesValides.Count(v => v >= 80 && v < 90),
+                    Bien = notesValides.Count(v => v >= 70 && v < 80),
+                    Passable = notesValides.Count(v => v >= 60 && v < 70),
+                    Echec = notesValides.Count(v => v < 60)
+                };
+            }
+            else
+            {
+                stats.Distribution = new DistributionMention();
+            }
+
+            return stats;
+        }
+
+        private static decimal CalculerMediane(List<decimal> sorted)
+        {
+            int n = sorted.Count;
+            if (n == 0) return 0;
+            return n % 2 == 1 ? sorted[n / 2] : Math.Round((sorted[(n / 2) - 1] + sorted[n / 2]) / 2m, 2);
+        }
+
+        private static decimal CalculerEcartType(List<decimal> values, decimal moyenne)
+        {
+            if (values.Count <= 1) return 0;
+            var sommeCarres = values.Sum(v => (double)((v - moyenne) * (v - moyenne)));
+            return Math.Round((decimal)Math.Sqrt(sommeCarres / values.Count), 2);
+        }
+
         // NOT-11 : Notes enrichies (avec libellés) pour un utilisateur donné.
         public List<NoteEleveViewModel> GetNotesEnrichiesByUtilisateur(int idUtilisateur)
         {
@@ -237,5 +320,41 @@ namespace Skolaris.Services
         public string? ErrorMessage { get; set; }
         public static NoteOperationResult Ok() => new() { Success = true };
         public static NoteOperationResult Fail(string error) => new() { Success = false, ErrorMessage = error };
+    }
+
+    // NOT-06
+    public class StatistiquesClasseViewModel
+    {
+        public int IdCoursOffert { get; set; }
+        public string CoursNom { get; set; } = "";
+        public string CoursCode { get; set; } = "";
+        public string GroupeNom { get; set; } = "";
+        public string SessionLibelle { get; set; } = "";
+        public int NombreInscrits { get; set; }
+        public int NombreNotes { get; set; }
+        public decimal? Moyenne { get; set; }
+        public decimal? Mediane { get; set; }
+        public decimal? Minimum { get; set; }
+        public decimal? Maximum { get; set; }
+        public decimal? EcartType { get; set; }
+        public DistributionMention Distribution { get; set; } = new();
+        public List<EleveResultatViewModel> Eleves { get; set; } = new();
+    }
+
+    public class DistributionMention
+    {
+        public int Excellent { get; set; }
+        public int TresBien { get; set; }
+        public int Bien { get; set; }
+        public int Passable { get; set; }
+        public int Echec { get; set; }
+    }
+
+    public class EleveResultatViewModel
+    {
+        public int IdEleve { get; set; }
+        public string NomComplet { get; set; } = "";
+        public string Matricule { get; set; } = "";
+        public decimal? NoteFinale { get; set; }
     }
 }
