@@ -20,5 +20,6 @@ namespace Skolaris.Models
         public ICollection<Absence> Absences { get; set; } = new List<Absence>();
         public ICollection<EmploiDuTemps> EmploisDuTemps { get; set; } = new List<EmploiDuTemps>();
         public ICollection<DetailBulletin> DetailBulletins { get; set; } = new List<DetailBulletin>();
+        public GrilleEvaluation? GrilleEvaluation { get; set; }
     }
 }

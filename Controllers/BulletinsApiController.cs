@@ -65,6 +65,35 @@ namespace Skolaris.Controllers
             return Ok(result.Bulletin);
         }
 
+        // POST: api/bulletins/generer-lot/{idGroupe}/{idSession} — NOT-08
+        [HttpPost("generer-lot/{idGroupe}/{idSession}")]
+        public IActionResult GenererBulletinsLot(int idGroupe, int idSession)
+        {
+            var result = _bulletinService.GenererBulletinsLot(idGroupe, idSession);
+            if (!result.Success)
+                return BadRequest(result.ErrorMessage);
+            return Ok(result);
+        }
+
+        // POST: api/bulletins/{id}/envoyer — NOT-09
+        [HttpPost("{id}/envoyer")]
+        public async Task<IActionResult> EnvoyerBulletin(int id)
+        {
+            var result = await _bulletinService.EnvoyerBulletinParCourriel(id);
+            if (!result.Success)
+                return BadRequest(result.ErrorMessage);
+            return Ok(new { result.EmailDestinataire });
+        }
+
+        // GET: api/bulletins/{id}/preview — aperçu HTML du bulletin (le même contenu envoyé par courriel)
+        [HttpGet("{id}/preview")]
+        public IActionResult PreviewBulletin(int id)
+        {
+            var html = _bulletinService.GetBulletinHtml(id);
+            if (html == null) return NotFound();
+            return Content(html, "text/html");
+        }
+
         // DELETE: api/bulletins/{id}
         [HttpDelete("{id}")]
         public IActionResult DeleteBulletin(int id)

@@ -48,47 +48,82 @@ namespace Skolaris.Services
         }
 
         // NOT-02 : Saisir une note
-        public bool CreateNote(Note note)
+        public NoteOperationResult CreateNote(Note note)
         {
             var eleve = _context.Eleves.FirstOrDefault(e => e.IdEleve == note.IdEleve);
             var coursOffert = _context.CoursOfferts.FirstOrDefault(co => co.IdCoursOffert == note.IdCoursOffert);
 
             if (eleve == null || coursOffert == null)
-                return false;
+                return NoteOperationResult.Fail("Élève ou cours introuvable.");
 
             if (note.Valeur < 0 || note.Valeur > 100)
-                return false;
+                return NoteOperationResult.Fail("La note doit être entre 0 et 100.");
 
             if (note.Ponderation < 0 || note.Ponderation > 100)
-                return false;
+                return NoteOperationResult.Fail("La pondération doit être entre 0 et 100.");
+
+            // NOT-10 : verrouillage de la saisie après date limite
+            var verrou = VerifierVerrouillage(coursOffert.IdSession);
+            if (verrou != null)
+                return NoteOperationResult.Fail(verrou);
 
             if (note.DateEvaluation == default)
                 note.DateEvaluation = DateTime.UtcNow;
 
             _context.Notes.Add(note);
             _context.SaveChanges();
-            return true;
+            return NoteOperationResult.Ok();
         }
 
         // NOT-03 : Modifier une note
-        public bool UpdateNote(int id, Note updated)
+        public NoteOperationResult UpdateNote(int id, Note updated)
         {
             var note = _context.Notes.FirstOrDefault(n => n.IdNote == id);
             if (note == null)
-                return false;
+                return NoteOperationResult.Fail("Note introuvable.");
 
             if (updated.Valeur < 0 || updated.Valeur > 100)
-                return false;
+                return NoteOperationResult.Fail("La note doit être entre 0 et 100.");
 
             if (updated.Ponderation < 0 || updated.Ponderation > 100)
-                return false;
+                return NoteOperationResult.Fail("La pondération doit être entre 0 et 100.");
+
+            // NOT-10 : verrouillage de la saisie après date limite
+            var coursOffert = _context.CoursOfferts.FirstOrDefault(co => co.IdCoursOffert == note.IdCoursOffert);
+            if (coursOffert != null)
+            {
+                var verrou = VerifierVerrouillage(coursOffert.IdSession);
+                if (verrou != null)
+                    return NoteOperationResult.Fail(verrou);
+            }
 
             note.Valeur = updated.Valeur;
             note.Type = updated.Type;
             note.Description = updated.Description;
             note.Ponderation = updated.Ponderation;
             note.DateEvaluation = updated.DateEvaluation == default ? note.DateEvaluation : updated.DateEvaluation;
+            note.Commentaire = updated.Commentaire;
 
+            _context.SaveChanges();
+            return NoteOperationResult.Ok();
+        }
+
+        // NOT-10 : retourne null si la session permet la saisie, sinon un message d'erreur
+        private string? VerifierVerrouillage(int idSession)
+        {
+            var session = _context.Sessions.FirstOrDefault(s => s.IdSession == idSession);
+            if (session == null) return null;
+            if (session.DateLimiteSaisieNotes.HasValue && DateTime.UtcNow > session.DateLimiteSaisieNotes.Value)
+                return $"La saisie des notes est verrouillée depuis le {session.DateLimiteSaisieNotes.Value:yyyy-MM-dd}.";
+            return null;
+        }
+
+        // NOT-10 : pose ou retire la date limite de saisie pour une session
+        public bool SetDateLimiteSaisie(int idSession, DateTime? dateLimite)
+        {
+            var session = _context.Sessions.FirstOrDefault(s => s.IdSession == idSession);
+            if (session == null) return false;
+            session.DateLimiteSaisieNotes = dateLimite;
             _context.SaveChanges();
             return true;
         }
@@ -111,7 +146,9 @@ namespace Skolaris.Services
         }
 
         // NOT-04 : Calcul automatique de la note finale (moyenne pondérée).
-        // Si la somme des pondérations est 0, on retombe sur une moyenne simple.
+        // Si une grille d'évaluation (NOT-01) existe pour le cours offert et que des notes
+        // ont une catégorie assignée, on calcule la moyenne par catégorie puis la moyenne
+        // pondérée des catégories. Sinon, on utilise la pondération directe sur chaque note.
         public decimal? CalculerNoteFinale(int idEleve, int idCoursOffert)
         {
             var notes = _context.Notes
@@ -121,13 +158,35 @@ namespace Skolaris.Services
             if (notes.Count == 0)
                 return null;
 
-            var sommePonderations = notes.Sum(n => n.Ponderation);
+            // NOT-01 : si la grille existe pour ce cours et que des notes sont rattachées à des catégories
+            var grille = _context.GrillesEvaluation
+                .Include(g => g.Categories)
+                .FirstOrDefault(g => g.IdCoursOffert == idCoursOffert);
 
-            if (sommePonderations <= 0)
+            if (grille != null && notes.Any(n => n.IdCategorie.HasValue))
+            {
+                decimal sommePonderee = 0;
+                decimal sommePonderations = 0;
+                foreach (var cat in grille.Categories)
+                {
+                    var notesCat = notes.Where(n => n.IdCategorie == cat.IdCategorie).ToList();
+                    if (notesCat.Count == 0) continue;
+                    var moyCat = notesCat.Average(n => n.Valeur);
+                    sommePonderee += moyCat * cat.Ponderation;
+                    sommePonderations += cat.Ponderation;
+                }
+                if (sommePonderations > 0)
+                    return Math.Round(sommePonderee / sommePonderations, 2);
+                // pas de catégorie active → on retombe sur la logique par note
+            }
+
+            var sommePondsNotes = notes.Sum(n => n.Ponderation);
+
+            if (sommePondsNotes <= 0)
                 return Math.Round(notes.Average(n => n.Valeur), 2);
 
-            var sommePonderee = notes.Sum(n => n.Valeur * n.Ponderation);
-            return Math.Round(sommePonderee / sommePonderations, 2);
+            var sommePondereeNotes = notes.Sum(n => n.Valeur * n.Ponderation);
+            return Math.Round(sommePondereeNotes / sommePondsNotes, 2);
         }
 
         // NOT-11 : Notes enrichies (avec libellés) pour un utilisateur donné.
@@ -151,7 +210,8 @@ namespace Skolaris.Services
                     Description = n.Description,
                     Valeur = n.Valeur,
                     Ponderation = n.Ponderation,
-                    DateEvaluation = n.DateEvaluation
+                    DateEvaluation = n.DateEvaluation,
+                    Commentaire = n.Commentaire
                 })
                 .ToList();
         }
@@ -168,5 +228,14 @@ namespace Skolaris.Services
         public decimal Valeur { get; set; }
         public decimal Ponderation { get; set; }
         public DateTime DateEvaluation { get; set; }
+        public string? Commentaire { get; set; }
+    }
+
+    public class NoteOperationResult
+    {
+        public bool Success { get; set; }
+        public string? ErrorMessage { get; set; }
+        public static NoteOperationResult Ok() => new() { Success = true };
+        public static NoteOperationResult Fail(string error) => new() { Success = false, ErrorMessage = error };
     }
 }

@@ -14,6 +14,48 @@ namespace Skolaris.Services
       _logger = logger;
     }
 
+    // Envoi générique d'un courriel HTML — utilisé pour bulletins (NOT-09), reset, etc.
+    public async Task<bool> SendEmailAsync(string toEmail, string toNom, string subject, string htmlBody)
+    {
+      var smtpHost = _config["EmailSettings:SmtpHost"];
+      var smtpPortStr = _config["EmailSettings:SmtpPort"];
+      var fromEmail = _config["EmailSettings:FromEmail"];
+      var fromPassword = _config["EmailSettings:FromPassword"];
+      var fromName = _config["EmailSettings:FromName"] ?? "Skolaris";
+
+      if (string.IsNullOrEmpty(smtpHost) || string.IsNullOrEmpty(fromEmail))
+      {
+        _logger.LogWarning("Email non configuré. Le courriel à {Email} (sujet: {Subject}) n'a pas été envoyé.", toEmail, subject);
+        return false;
+      }
+
+      try
+      {
+        int port = int.TryParse(smtpPortStr, out var p) ? p : 587;
+
+        using var client = new SmtpClient(smtpHost, port);
+        client.EnableSsl = true;
+        client.Credentials = new NetworkCredential(fromEmail, fromPassword);
+
+        var message = new MailMessage
+        {
+          From = new MailAddress(fromEmail, fromName),
+          Subject = subject,
+          IsBodyHtml = true,
+          Body = htmlBody
+        };
+        message.To.Add(new MailAddress(toEmail, toNom));
+
+        await client.SendMailAsync(message);
+        return true;
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError(ex, "Erreur lors de l'envoi du courriel à {Email}", toEmail);
+        return false;
+      }
+    }
+
     public async Task<bool> SendPasswordResetEmailAsync(string toEmail, string toNom, string resetLink)
     {
       var smtpHost = _config["EmailSettings:SmtpHost"];

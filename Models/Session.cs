@@ -9,6 +9,7 @@ namespace Skolaris.Models
         public TypeSession Type { get; set; }
         public int IdAnnee { get; set; }
         public bool IsActive { get; set; } = true;
+        public DateTime? DateLimiteSaisieNotes { get; set; }
 
         public AnneeScolaire AnneeScolaire { get; set; } = null!;
         public ICollection<CoursOffert> CoursOfferts { get; set; } = new List<CoursOffert>();

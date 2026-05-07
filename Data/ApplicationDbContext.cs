@@ -21,6 +21,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Eleve> Eleves { get; set; }
     public DbSet<Inscription> Inscriptions { get; set; }
     public DbSet<Note> Notes { get; set; }
+    public DbSet<GrilleEvaluation> GrillesEvaluation { get; set; }
+    public DbSet<CategorieEvaluation> CategoriesEvaluation { get; set; }
     public DbSet<Bulletin> Bulletins { get; set; }
     public DbSet<DetailBulletin> DetailBulletins { get; set; }
     public DbSet<Absence> Absences { get; set; }
@@ -156,8 +158,28 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Type).HasConversion<string>();
             entity.Property(e => e.Description).HasMaxLength(200);
             entity.Property(e => e.Ponderation).HasPrecision(5, 2);
+            entity.Property(e => e.Commentaire).HasMaxLength(2000);
             entity.HasOne(e => e.Eleve).WithMany(e => e.Notes).HasForeignKey(e => e.IdEleve);
             entity.HasOne(e => e.CoursOffert).WithMany(e => e.Notes).HasForeignKey(e => e.IdCoursOffert);
+            entity.HasOne(e => e.Categorie).WithMany(c => c.Notes).HasForeignKey(e => e.IdCategorie).IsRequired(false);
+        });
+
+        // GrilleEvaluation (NOT-01)
+        modelBuilder.Entity<GrilleEvaluation>(entity =>
+        {
+            entity.HasKey(e => e.IdGrille);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.HasOne(e => e.CoursOffert).WithOne(co => co.GrilleEvaluation).HasForeignKey<GrilleEvaluation>(e => e.IdCoursOffert);
+            entity.HasIndex(e => e.IdCoursOffert).IsUnique();
+        });
+
+        // CategorieEvaluation (NOT-01)
+        modelBuilder.Entity<CategorieEvaluation>(entity =>
+        {
+            entity.HasKey(e => e.IdCategorie);
+            entity.Property(e => e.Nom).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Ponderation).HasPrecision(5, 2);
+            entity.HasOne(e => e.Grille).WithMany(g => g.Categories).HasForeignKey(e => e.IdGrille);
         });
 
         // Bulletin

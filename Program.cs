@@ -38,6 +38,7 @@ builder.Services.AddScoped<AbsenceService>();
 builder.Services.AddScoped<InscriptionService>();
 builder.Services.AddScoped<NoteService>();
 builder.Services.AddScoped<BulletinService>();
+builder.Services.AddScoped<GrilleEvaluationService>();
 
 
 builder.Services.AddCors(options =>
