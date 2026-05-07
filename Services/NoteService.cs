@@ -99,6 +99,12 @@ namespace Skolaris.Services
             if (note == null)
                 return false;
 
+            // Une note peut être référencée par des DetailBulletin (NOT-07).
+            // On les supprime d'abord — le bulletin garde sa moyenne historique mais peut être régénéré.
+            var details = _context.DetailBulletins.Where(d => d.IdNote == id).ToList();
+            if (details.Count > 0)
+                _context.DetailBulletins.RemoveRange(details);
+
             _context.Notes.Remove(note);
             _context.SaveChanges();
             return true;
