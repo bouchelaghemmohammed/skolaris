@@ -70,13 +70,23 @@ namespace Skolaris.Controllers
             return Ok(new { idEleve, idCoursOffert, noteFinale = finale });
         }
 
+        // GET: api/notes/cours/{idCoursOffert}/statistiques — NOT-06
+        [HttpGet("cours/{idCoursOffert}/statistiques")]
+        public IActionResult GetStatistiquesClasse(int idCoursOffert)
+        {
+            var stats = _noteService.CalculerStatistiquesClasse(idCoursOffert);
+            if (stats == null)
+                return NotFound("Cours offert introuvable.");
+            return Ok(stats);
+        }
+
         // POST: api/notes — NOT-02
         [HttpPost]
         public IActionResult CreateNote([FromBody] Note note)
         {
             var result = _noteService.CreateNote(note);
-            if (!result)
-                return BadRequest("Élève ou cours introuvable, ou note/pondération hors plage (0-100).");
+            if (!result.Success)
+                return BadRequest(result.ErrorMessage);
             return Ok(note);
         }
 
@@ -85,8 +95,8 @@ namespace Skolaris.Controllers
         public IActionResult UpdateNote(int id, [FromBody] Note note)
         {
             var result = _noteService.UpdateNote(id, note);
-            if (!result)
-                return NotFound("Note introuvable ou valeurs invalides.");
+            if (!result.Success)
+                return BadRequest(result.ErrorMessage);
             return Ok();
         }
 
@@ -99,5 +109,21 @@ namespace Skolaris.Controllers
                 return NotFound();
             return Ok();
         }
+
+        // PUT: api/notes/sessions/{idSession}/date-limite — NOT-10
+        // Body: { "dateLimite": "2026-06-30T00:00:00" } ou null pour déverrouiller
+        [HttpPut("sessions/{idSession}/date-limite")]
+        public IActionResult SetDateLimiteSaisie(int idSession, [FromBody] DateLimiteRequest request)
+        {
+            var ok = _noteService.SetDateLimiteSaisie(idSession, request.DateLimite);
+            if (!ok)
+                return NotFound("Session introuvable.");
+            return Ok();
+        }
+    }
+
+    public class DateLimiteRequest
+    {
+        public DateTime? DateLimite { get; set; }
     }
 }
