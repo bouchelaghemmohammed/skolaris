@@ -15,17 +15,18 @@ namespace Skolaris.Services
 
         public List<Absence> GetAllAbsences()
         {
-            return _context.Absences.ToList();
+            return _context.Absences.Include(a => a.Justification).ToList();
         }
 
         public Absence? GetAbsenceById(int id)
         {
-            return _context.Absences.FirstOrDefault(a => a.IdAbsence == id);
+            return _context.Absences.Include(a => a.Justification).FirstOrDefault(a => a.IdAbsence == id);
         }
 
         public List<Absence> GetAbsencesByEleve(int idEleve)
         {
             return _context.Absences
+                .Include(a => a.Justification)
                 .Where(a => a.IdEleve == idEleve)
                 .ToList();
         }
@@ -37,6 +38,7 @@ namespace Skolaris.Services
 
             return _context.Absences
                 .AsNoTracking()
+                .Include(a => a.Justification)
                 .Where(a => a.IdEleve == eleve.IdEleve)
                 .ToList();
         }
@@ -44,8 +46,58 @@ namespace Skolaris.Services
         public List<Absence> GetAbsencesByCoursOffert(int coursOffertId)
         {
             return _context.Absences
+                .Include(a => a.Justification)
                 .Where(a => a.IdCoursOffert == coursOffertId)
                 .ToList();
+        }
+
+        public bool SetExplicationEleve(int idAbsence, string texte)
+        {
+            var absence = _context.Absences.Include(a => a.Justification).FirstOrDefault(a => a.IdAbsence == idAbsence);
+            if (absence == null) return false;
+
+            if (absence.Justification == null)
+            {
+                absence.Justification = new JustificationAbsence
+                {
+                    IdAbsence = idAbsence,
+                    Statut = Enums.StatutJustification.Justifiee,
+                    Description = texte
+                };
+                _context.JustificationsAbsence.Add(absence.Justification);
+            }
+            else
+            {
+                absence.Justification.Description = texte;
+            }
+
+            _context.SaveChanges();
+            return true;
+        }
+
+        public bool SetJustification(int idAbsence, Enums.StatutJustification statut, string? description)
+        {
+            var absence = _context.Absences.Include(a => a.Justification).FirstOrDefault(a => a.IdAbsence == idAbsence);
+            if (absence == null) return false;
+
+            if (absence.Justification == null)
+            {
+                absence.Justification = new JustificationAbsence
+                {
+                    IdAbsence = idAbsence,
+                    Statut = statut,
+                    Description = description
+                };
+                _context.JustificationsAbsence.Add(absence.Justification);
+            }
+            else
+            {
+                absence.Justification.Statut = statut;
+                absence.Justification.Description = description;
+            }
+
+            _context.SaveChanges();
+            return true;
         }
 
         public bool CreateAbsence(Absence absence)

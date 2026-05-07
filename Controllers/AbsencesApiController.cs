@@ -61,7 +61,7 @@ namespace Skolaris.Controllers
             var absence = new Absence
             {
                 Type = dto.Type,
-                Statut = dto.Statut,
+                Statut = Enums.StatutAbsence.EnAttente,
                 DateAbsence = dto.DateAbsence,
                 IdEleve = dto.IdEleve,
                 IdCoursOffert = dto.IdCoursOffert
@@ -70,7 +70,7 @@ namespace Skolaris.Controllers
             var result = _absenceService.CreateAbsence(absence);
             if (!result)
                 return BadRequest("Utilisateur introuvable.");
-            return Ok();
+            return Ok(new { absence.IdAbsence });
         }
 
         // PUT: api/absences/{id}
@@ -78,6 +78,29 @@ namespace Skolaris.Controllers
         public IActionResult UpdateAbsence(int id, [FromBody] Absence absence)
         {
             var result = _absenceService.UpdateAbsence(id, absence);
+            if (!result)
+                return NotFound();
+            return Ok();
+        }
+
+        // POST: api/absences/{id}/explication — texte de justification soumis par l'élève
+        [HttpPost("{id}/explication")]
+        public IActionResult SetExplicationEleve(int id, [FromBody] ExplicationDto dto)
+        {
+            var result = _absenceService.SetExplicationEleve(id, dto.Texte ?? "");
+            if (!result) return NotFound();
+            return Ok();
+        }
+
+        // POST: api/absences/{id}/justification — soumis par l'enseignant
+        [HttpPost("{id}/justification")]
+        public IActionResult SetJustification(int id, [FromBody] JustificationDto dto)
+        {
+            var statut = dto.Statut == "NonJustifiee"
+                ? Enums.StatutJustification.NonJustifiee
+                : Enums.StatutJustification.Justifiee;
+
+            var result = _absenceService.SetJustification(id, statut, dto.Description);
             if (!result)
                 return NotFound();
             return Ok();
@@ -92,5 +115,16 @@ namespace Skolaris.Controllers
                 return NotFound();
             return Ok();
         }
+    }
+
+    public class JustificationDto
+    {
+        public string Statut { get; set; } = "Justifiee";
+        public string? Description { get; set; }
+    }
+
+    public class ExplicationDto
+    {
+        public string? Texte { get; set; }
     }
 }
