@@ -33,5 +33,25 @@ namespace Skolaris.Controllers
 
             return Ok(eleves);
         }
+
+        // GET: api/eleves/cours/{idCoursOffert}
+        [HttpGet("cours/{idCoursOffert}")]
+        public IActionResult GetElevesByCoursOffert(int idCoursOffert)
+        {
+            var eleves = _context.Inscriptions
+                .Where(i => i.IdCoursOffert == idCoursOffert)
+                .Include(i => i.Eleve)
+                    .ThenInclude(e => e.Utilisateur)
+                .Select(i => new
+                {
+                    IdEleve = i.Eleve.IdEleve,
+                    Matricule = i.Eleve.Matricule,
+                    Nom = i.Eleve.Utilisateur.Nom,
+                    Prenom = i.Eleve.Utilisateur.Prenom
+                })
+                .ToList();
+
+            return Ok(eleves);
+        }
     }
 }

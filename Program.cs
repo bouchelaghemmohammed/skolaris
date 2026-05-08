@@ -53,7 +53,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Migration automatique + seed au démarrage
+// mohammed ! migration automatique + seed au démarrage ne le change pas svp !!!!!!
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

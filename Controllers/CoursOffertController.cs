@@ -23,6 +23,9 @@ namespace Skolaris.Controllers
         {
             var coursOfferts = _context.CoursOfferts
                 .Include(co => co.Cours)
+                    .ThenInclude(c => c.Programme)
+                .Include(co => co.Session)
+                .Include(co => co.Enseignant)
                 .Select(co => new
                 {
                     IdCoursOffert = co.IdCoursOffert,
@@ -30,8 +33,12 @@ namespace Skolaris.Controllers
                     IdGroupe = co.IdGroupe,
                     IdSession = co.IdSession,
                     IdEnseignant = co.IdEnseignant,
+                    IdUtilisateurEnseignant = co.Enseignant != null ? co.Enseignant.IdUtilisateur : (int?)null,
                     ModeEnseignement = co.ModeEnseignement,
-                    NomCours = co.Cours.Nom
+                    NomCours = co.Cours.Nom,
+                    NomSession = co.Session.Libelle,
+                    IdProgramme = co.Cours.IdProgramme,
+                    NomProgramme = co.Cours.Programme.Nom
                 })
                 .ToList();
 
@@ -88,7 +95,7 @@ namespace Skolaris.Controllers
             coursOffert.IdCours = updatedCoursOffert.IdCours;
             coursOffert.IdSession = updatedCoursOffert.IdSession;
             coursOffert.ModeEnseignement = updatedCoursOffert.ModeEnseignement;
-           // coursOffert.Actif = updatedCoursOffert.Actif;
+            // coursOffert.Actif = updatedCoursOffert.Actif;
 
             _context.SaveChanges();
 
