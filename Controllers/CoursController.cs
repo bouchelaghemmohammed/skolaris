@@ -68,9 +68,9 @@ namespace Skolaris.Controllers
 			cours.IdNiveau = updatedCours.IdNiveau;
 			cours.Nom = updatedCours.Nom;
 			cours.Description = updatedCours.Description;
-			/*cours.Credit = updatedCours.Credit;
+			cours.Credit = updatedCours.Credit;
 			cours.Duree = updatedCours.Duree;
-			cours.Actif = updatedCours.Actif;*/
+			cours.Actif = updatedCours.Actif;
 
 			_context.SaveChanges();
 

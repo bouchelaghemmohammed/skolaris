@@ -10,6 +10,9 @@ namespace Skolaris.Models
         public string? Description { get; set; }
         public int IdProgramme { get; set; }
         public int IdNiveau { get; set; }
+        public int Credit { get; set; }
+        public int Duree { get; set; }
+        public bool Actif { get; set; } = true;
 
         public Programme Programme { get; set; } = null!;
         public Niveau Niveau { get; set; } = null!;

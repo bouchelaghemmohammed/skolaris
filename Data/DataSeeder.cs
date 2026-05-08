@@ -112,15 +112,17 @@ namespace Skolaris.Data
                 context.SaveChanges();
             }
 
-            // Niveau
-            if (!context.Niveaux.Any())
+            // Niveaux (4 par défaut)
             {
                 var programme = context.Programmes.First();
-                context.Niveaux.Add(new Niveau
+                var nomsNiveaux = new[] { "Niveau 1", "Niveau 2", "Niveau 3", "Niveau 4" };
+                foreach (var nom in nomsNiveaux)
                 {
-                    Nom = "Session 6",
-                    IdProgramme = programme.IdProgramme
-                });
+                    if (!context.Niveaux.Any(n => n.Nom == nom && n.IdProgramme == programme.IdProgramme))
+                    {
+                        context.Niveaux.Add(new Niveau { Nom = nom, IdProgramme = programme.IdProgramme });
+                    }
+                }
                 context.SaveChanges();
             }
 
@@ -153,7 +155,7 @@ namespace Skolaris.Data
             }
 
             // ===== ENSEIGNANT (entité liée à l'utilisateur prof) =====
-            var profUser = context.Utilisateurs.FirstOrDefault(u => u.Email == "prof@gmail.com");
+            var profUser = context.Utilisateurs.FirstOrDefault(u => u.Email == "enseignant@gmail.com");
             if (profUser != null && !context.Enseignants.Any(e => e.IdUtilisateur == profUser.IdUtilisateur))
             {
                 context.Enseignants.Add(new Enseignant
