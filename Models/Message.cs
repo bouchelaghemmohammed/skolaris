@@ -7,6 +7,9 @@ namespace Skolaris.Models
         public DateTime DateEnvoi { get; set; } = DateTime.UtcNow;
         public int IdConversation { get; set; }
         public int IdExpediteur { get; set; }
+        public string? PieceJointePath { get; set; }
+        public string? PieceJointeNom { get; set; }
+        public bool EstSignale { get; set; } = false;
 
         public Conversation Conversation { get; set; } = null!;
         public Utilisateur Expediteur { get; set; } = null!;

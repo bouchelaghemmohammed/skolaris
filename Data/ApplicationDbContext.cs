@@ -233,6 +233,8 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.IdConversation);
             entity.Property(e => e.Sujet).HasMaxLength(300);
             entity.Property(e => e.Type).HasConversion<string>();
+            entity.Property(e => e.IdCreateur).IsRequired(false);
+            entity.Property(e => e.EstAnnonce).HasDefaultValue(false);
         });
 
         // ConversationParticipant
@@ -248,6 +250,9 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.IdMessage);
             entity.Property(e => e.Contenu).HasMaxLength(4000);
+            entity.Property(e => e.PieceJointePath).HasMaxLength(500).IsRequired(false);
+            entity.Property(e => e.PieceJointeNom).HasMaxLength(200).IsRequired(false);
+            entity.Property(e => e.EstSignale).HasDefaultValue(false);
             entity.HasOne(e => e.Conversation).WithMany(e => e.Messages).HasForeignKey(e => e.IdConversation);
             entity.HasOne(e => e.Expediteur).WithMany(e => e.MessagesEnvoyes).HasForeignKey(e => e.IdExpediteur);
         });

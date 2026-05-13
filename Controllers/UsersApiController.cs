@@ -20,6 +20,16 @@ namespace Skolaris.Controllers
             return Ok(_userService.GetAllUsers());
         }
 
+        [HttpPost]
+        public IActionResult CreateUser([FromBody] CreateUserRequest request)
+        {
+            var (success, error) = _userService.CreateUser(
+                request.Prenom, request.Nom, request.Email, request.Role, request.MotDePasse);
+            if (!success)
+                return BadRequest(error);
+            return Ok();
+        }
+
         [HttpPost("{id}/toggle-active")]
         public IActionResult ToggleActive(int id)
         {
@@ -37,7 +47,7 @@ namespace Skolaris.Controllers
             var result = _userService.ChangeRole(id, request.Role);
 
             if (!result)
-                return BadRequest("Rôle invalide.");
+                return BadRequest("Rï¿½le invalide.");
 
             return Ok();
         }
@@ -46,5 +56,14 @@ namespace Skolaris.Controllers
     public class ChangeRoleRequest
     {
         public string Role { get; set; } = "";
+    }
+
+    public class CreateUserRequest
+    {
+        public string Prenom { get; set; } = "";
+        public string Nom { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Role { get; set; } = "ELEVE";
+        public string MotDePasse { get; set; } = "";
     }
 }

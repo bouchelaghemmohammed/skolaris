@@ -39,6 +39,17 @@ builder.Services.AddScoped<InscriptionService>();
 builder.Services.AddScoped<NoteService>();
 builder.Services.AddScoped<BulletinService>();
 builder.Services.AddScoped<GrilleEvaluationService>();
+builder.Services.AddScoped<MessagerieService>();
+
+// Limite upload: 10 Mo pour les pièces jointes de la messagerie
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(o =>
+{
+    o.MultipartBodyLengthLimit = 10_485_760; // 10 Mo
+});
+builder.WebHost.ConfigureKestrel(opts =>
+{
+    opts.Limits.MaxRequestBodySize = 10_485_760; // 10 Mo
+});
 
 
 builder.Services.AddCors(options =>
@@ -53,15 +64,16 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// mohammed ! migration automatique + seed au démarrage ne le change pas svp !!!!!!
+// mohammed ! création automatique de la BD + seed au démarrage ne le change pas svp !!!!!!
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();
+    db.Database.EnsureCreated(); // crée toutes les tables depuis le DbContext, sans fichiers migration
     DataSeeder.Seed(db);
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
 app.UseCors("AllowBlazor");
 
