@@ -1,5 +1,6 @@
 using Skolaris.Data;
 using Skolaris.Enums;
+using Skolaris.Models;
 using Skolaris.ViewModels;
 
 namespace Skolaris.Services
@@ -64,12 +65,49 @@ namespace Skolaris.Services
             if (user == null)
                 return false;
 
+            // Vérifier que l'email n'est pas déjà utilisé par un autre utilisateur
+            var emailPrisParAutre = _context.Utilisateurs
+                .Any(u => u.Email.ToLower() == email.Trim().ToLower() && u.IdUtilisateur != id);
+            if (emailPrisParAutre)
+                return false;
+
             user.Prenom = string.IsNullOrWhiteSpace(prenom) ? user.Prenom : prenom;
             user.Nom = nom;
-            user.Email = email;
+            user.Email = email.Trim();
 
             _context.SaveChanges();
             return true;
+        }
+
+        public (bool Success, string Error) CreateUser(string prenom, string nom, string email, string role, string motDePasse)
+        {
+            if (string.IsNullOrWhiteSpace(nom) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(motDePasse))
+                return (false, "Champs obligatoires manquants.");
+
+            if (!email.Contains("@"))
+                return (false, "Email invalide.");
+
+            if (!Enum.TryParse<Role>(role, true, out var roleEnum))
+                return (false, "Rôle invalide.");
+
+            if (_context.Utilisateurs.Any(u => u.Email.ToLower() == email.Trim().ToLower()))
+                return (false, "Cet email est déjà utilisé.");
+
+            var user = new Utilisateur
+            {
+                Prenom = prenom.Trim(),
+                Nom = nom.Trim(),
+                Email = email.Trim(),
+                Role = roleEnum,
+                IsActive = true
+            };
+
+            var hasher = new Microsoft.AspNetCore.Identity.PasswordHasher<Utilisateur>();
+            user.MotDePasse = hasher.HashPassword(user, motDePasse);
+
+            _context.Utilisateurs.Add(user);
+            _context.SaveChanges();
+            return (true, "");
         }
     }
 }

@@ -12,10 +12,12 @@ namespace Skolaris.Controllers
     public class AuthApiController : ControllerBase
     {
         private readonly AuthService _authService;
+        private readonly IConfiguration _config;
 
-        public AuthApiController(AuthService authService)
+        public AuthApiController(AuthService authService, IConfiguration config)
         {
             _authService = authService;
+            _config = config;
         }
 
         [HttpPost("login")]
@@ -41,7 +43,8 @@ namespace Skolaris.Controllers
             if (string.IsNullOrWhiteSpace(request.Email))
                 return BadRequest("Email requis.");
 
-            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            // Utiliser FrontendUrl (appsettings) pour le lien de reset — pas le backend
+            var baseUrl = _config["FrontendUrl"] ?? $"{Request.Scheme}://{Request.Host}";
             var result = await _authService.ForgotPasswordAsync(request.Email, baseUrl);
 
             return Ok(new
@@ -65,7 +68,7 @@ namespace Skolaris.Controllers
 
             return Ok(new { Success = true });
         }
-        
+
     }
 
     public class LoginRequest

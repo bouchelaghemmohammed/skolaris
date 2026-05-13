@@ -29,13 +29,13 @@ namespace Skolaris.Data
             }
 
             // Enseignant
-            if (!context.Utilisateurs.Any(u => u.Email == "prof@gmail.com"))
+            if (!context.Utilisateurs.Any(u => u.Email == "enseignant@gmail.com"))
             {
                 var enseignant = new Utilisateur
                 {
-                    Nom = "Dion",
-                    Prenom = "Céline",
-                    Email = "prof@gmail.com",
+                    Nom = "Enseignant",
+                    Prenom = "Skolaris",
+                    Email = "enseignant@gmail.com",
                     Role = Role.ENSEIGNANT,
                     IsActive = true
                 };
@@ -44,13 +44,13 @@ namespace Skolaris.Data
                 context.SaveChanges();
             }
 
-            // Élève (correction: vérifie le bon email — bug dans le code original)
+            // Élève 
             if (!context.Utilisateurs.Any(u => u.Email == "eleve@gmail.com"))
             {
                 var eleve = new Utilisateur
                 {
-                    Nom = "Tremblay",
-                    Prenom = "Marie",
+                    Nom = "Eleve",
+                    Prenom = "Skolaris",
                     Email = "eleve@gmail.com",
                     Role = Role.ELEVE,
                     IsActive = true
@@ -68,7 +68,7 @@ namespace Skolaris.Data
                 context.Ecoles.Add(new Ecole
                 {
                     Nom = "Cégep Skolaris",
-                    Adresse = "123 rue de l'Éducation, Mascouche, QC",
+                    Adresse = "123 Montreal, QC",
                     Telephone = "450-555-1234",
                     Email = "info@skolaris.qc.ca",
                     IsActive = true
