@@ -1,0 +1,162 @@
+@page "/dashboard-admin"
+@rendermode InteractiveServer
+
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+@if (nomAdmin != null)
+{
+    <div class="sk-welcome">
+        <div class="sk-welcome-avatar">@GetInitiales(nomAdmin)</div>
+        <div>
+            <h2 class="sk-welcome-title">Bonjour, @nomAdmin !</h2>
+            <p class="sk-welcome-sub">Tableau de bord administrateur</p>
+        </div>
+    </div>
+}
+
+@if (stats == null)
+{
+    <div class="sk-loading">Chargement...</div>
+}
+else
+{
+    <div class="sk-stats-row">
+        <div class="sk-stat-card">
+            <div class="sk-stat-icon">👥</div>
+            <div class="sk-stat-value">@stats.TotalUsers</div>
+            <div class="sk-stat-label">Total utilisateurs</div>
+        </div>
+        <div class="sk-stat-card sk-stat-card-blue">
+            <div class="sk-stat-icon">🛡️</div>
+            <div class="sk-stat-value">@stats.TotalAdmins</div>
+            <div class="sk-stat-label">Admins</div>
+        </div>
+        <div class="sk-stat-card sk-stat-card-accent">
+            <div class="sk-stat-icon">📖</div>
+            <div class="sk-stat-value">@stats.TotalEnseignants</div>
+            <div class="sk-stat-label">Enseignants</div>
+        </div>
+        <div class="sk-stat-card sk-stat-card-green">
+            <div class="sk-stat-icon">🎓</div>
+            <div class="sk-stat-value">@stats.TotalEleves</div>
+            <div class="sk-stat-label">Élèves</div>
+        </div>
+        <div class="sk-stat-card">
+            <div class="sk-stat-icon">✅</div>
+            <div class="sk-stat-value">@stats.ActiveUsers</div>
+            <div class="sk-stat-label">Actifs</div>
+        </div>
+        <div class="sk-stat-card sk-stat-card-warn">
+            <div class="sk-stat-icon">🚫</div>
+            <div class="sk-stat-value">@stats.InactiveUsers</div>
+            <div class="sk-stat-label">Désactivés</div>
+        </div>
+        <div class="sk-stat-card sk-stat-card-blue">
+            <div class="sk-stat-icon">📝</div>
+            <div class="sk-stat-value">@stats.TotalInscriptions</div>
+            <div class="sk-stat-label">Inscriptions</div>
+        </div>
+        <div class="sk-stat-card sk-stat-card-accent">
+            <div class="sk-stat-icon">📋</div>
+            <div class="sk-stat-value">@stats.TotalAbsences</div>
+            <div class="sk-stat-label">Absences</div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="sk-section-title" style="margin-top:32px;">Gestion de la plateforme</div>
+    <div class="sk-action-grid">
+        <div class="sk-action-card" @onclick="GoUsers">
+            <div class="sk-action-icon">👤</div>
+            <div class="sk-action-title">Utilisateurs</div>
+            <div class="sk-action-desc">Gérer les comptes, rôles et accès</div>
+        </div>
+        <div class="sk-action-card" @onclick="GoEtablissements">
+            <div class="sk-action-icon">🏫</div>
+            <div class="sk-action-title">Établissements</div>
+            <div class="sk-action-desc">Créer et configurer les écoles</div>
+        </div>
+        <div class="sk-action-card" @onclick="GoSessions">
+            <div class="sk-action-icon">📅</div>
+            <div class="sk-action-title">Sessions</div>
+            <div class="sk-action-desc">Gérer les sessions Automne, Hiver, Été</div>
+        </div>
+        <div class="sk-action-card" @onclick="GoProgrammes">
+            <div class="sk-action-icon">📚</div>
+            <div class="sk-action-title">Programmes</div>
+            <div class="sk-action-desc">Créer et gérer les programmes</div>
+        </div>
+
+        <div class="sk-action-card" @onclick="GoCours">
+            <div class="sk-action-icon">📘</div>
+            <div class="sk-action-title">Cours</div>
+            <div class="sk-action-desc">Créer et gérer les cours</div>
+        </div>
+
+        <div class="sk-action-card" @onclick="GoInscriptions">
+            <div class="sk-action-icon">📝</div>
+            <div class="sk-action-title">Inscriptions</div>
+            <div class="sk-action-desc">Inscrire des élèves aux cours offerts</div>
+        </div>
+
+        <div class="sk-action-card" @onclick="GoAbsences">
+            <div class="sk-action-icon">🚫</div>
+            <div class="sk-action-title">Absences</div>
+            <div class="sk-action-desc">Consulter et gérer les absences</div>
+        </div>
+
+        <div class="sk-action-card" @onclick="GoEmploiDuTemps">
+            <div class="sk-action-icon">🗓️</div>
+            <div class="sk-action-title">Emploi du temps</div>
+            <div class="sk-action-desc">Créer et gérer les créneaux horaires</div>
+        </div>
+
+    </div>
+}
+
+@code {
+    private DashboardStats? stats;
+    private string? nomAdmin;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            nomAdmin = await JS.InvokeAsync<string>("localStorage.getItem", "nom") ?? "Admin";
+            stats = await Http.GetFromJsonAsync<DashboardStats>("api/dashboard/admin-stats");
+            StateHasChanged();
+        }
+    }
+
+    private string GetInitiales(string nom)
+    {
+        if (string.IsNullOrWhiteSpace(nom)) return "A";
+        var parts = nom.Trim().Split(' ');
+        return parts.Length >= 2
+            ? $"{parts[0][0]}{parts[^1][0]}".ToUpper()
+            : nom[0].ToString().ToUpper();
+    }
+
+    private void GoUsers() => Navigation.NavigateTo("/users-management");
+    private void GoEtablissements() => Navigation.NavigateTo("/etablissements");
+    private void GoSessions() => Navigation.NavigateTo("/sessions");
+    private void GoProgrammes() => Navigation.NavigateTo("/admin/programmes/create");
+    private void GoCours() => Navigation.NavigateTo("/admin/cours/create");
+    private void GoInscriptions() => Navigation.NavigateTo("/admin/inscriptions");
+    private void GoAbsences() => Navigation.NavigateTo("/admin/absences");
+    private void GoEmploiDuTemps() => Navigation.NavigateTo("/admin/emploi-du-temps");
+
+    public class DashboardStats
+    {
+        public int TotalUsers { get; set; }
+        public int TotalAdmins { get; set; }
+        public int TotalEnseignants { get; set; }
+        public int TotalEleves { get; set; }
+        public int ActiveUsers { get; set; }
+        public int InactiveUsers { get; set; }
+        public int TotalInscriptions { get; set; }
+        public int TotalAbsences { get; set; }
+    }
+}
