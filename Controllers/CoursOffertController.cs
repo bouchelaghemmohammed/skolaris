@@ -26,6 +26,7 @@ namespace Skolaris.Controllers
                     .ThenInclude(c => c.Programme)
                 .Include(co => co.Session)
                 .Include(co => co.Enseignant)
+                .Include(co => co.Groupe) // Added
                 .Select(co => new
                 {
                     IdCoursOffert = co.IdCoursOffert,
@@ -38,7 +39,8 @@ namespace Skolaris.Controllers
                     NomCours = co.Cours.Nom,
                     NomSession = co.Session.Libelle,
                     IdProgramme = co.Cours.IdProgramme,
-                    NomProgramme = co.Cours.Programme.Nom
+                    NomProgramme = co.Cours.Programme.Nom,
+                    NomGroupe = co.Groupe.Nom // Added
                 })
                 .ToList();
 
