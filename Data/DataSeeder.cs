@@ -202,6 +202,42 @@ namespace Skolaris.Data
                 });
                 context.SaveChanges();
             }
+
+            // ===== EMPLOI DU TEMPS (créneaux horaires) =====
+            if (!context.EmploisDuTemps.Any())
+            {
+                var coursOffert = context.CoursOfferts.FirstOrDefault();
+                if (coursOffert != null)
+                {
+                    context.EmploisDuTemps.AddRange(
+                        new EmploiDuTemps
+                        {
+                            IdCoursOffert = coursOffert.IdCoursOffert,
+                            JourSemaine   = JourSemaine.Lundi,
+                            HeureDebut    = new TimeSpan(8, 30, 0),
+                            HeureFin      = new TimeSpan(11, 30, 0),
+                            Salle         = "B-201"
+                        },
+                        new EmploiDuTemps
+                        {
+                            IdCoursOffert = coursOffert.IdCoursOffert,
+                            JourSemaine   = JourSemaine.Mercredi,
+                            HeureDebut    = new TimeSpan(13, 0, 0),
+                            HeureFin      = new TimeSpan(16, 0, 0),
+                            Salle         = "B-201"
+                        },
+                        new EmploiDuTemps
+                        {
+                            IdCoursOffert = coursOffert.IdCoursOffert,
+                            JourSemaine   = JourSemaine.Vendredi,
+                            HeureDebut    = new TimeSpan(9, 0, 0),
+                            HeureFin      = new TimeSpan(12, 0, 0),
+                            Salle         = "A-105"
+                        }
+                    );
+                    context.SaveChanges();
+                }
+            }
         }
     }
 }
