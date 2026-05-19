@@ -25,8 +25,6 @@ namespace Skolaris.Controllers
 
                 .Select(g => new { IdGroupe = g.IdGroupe, Nom = g.Nom, IdProgramme = g.IdProgramme }) // Modified: added IdProgramme
 
-                .Select(g => new { Id = g.IdGroupe, Nom = g.Nom })
-
                 .ToList();
 
             return Ok(groupes);
