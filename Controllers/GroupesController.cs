@@ -20,7 +20,7 @@ namespace Skolaris.Controllers
         public IActionResult GetAll()
         {
             var groupes = _context.Groupes
-                .Select(g => new { id = g.IdGroupe, nom = g.Nom })
+                .Select(g => new { Id = g.IdGroupe, Nom = g.Nom })
                 .ToList();
 
             return Ok(groupes);
