@@ -68,7 +68,7 @@ namespace Skolaris.Controllers
 
 			programme.Nom = updatedProgramme.Nom; // Updating Nom field of the programme
 
-            //programme.Description = updated.Description;
+            programme.Description = updatedProgramme.Description;
 
             _context.SaveChanges();
 
