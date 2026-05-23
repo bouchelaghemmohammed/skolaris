@@ -35,7 +35,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<PaiementEleve> PaiementsEleves { get; set; }
     public DbSet<TauxHoraireEnseignant> TauxHorairesEnseignants { get; set; }
     public DbSet<PaiementEnseignant> PaiementsEnseignants { get; set; }
+
     public DbSet<AuditLog> AuditLogs { get; set; }
+
+    public DbSet<Notification> Notifications { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -306,6 +310,7 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.TauxHoraire).WithMany(e => e.Paiements).HasForeignKey(e => e.IdTaux);
         });
 
+
         // AuditLog
         modelBuilder.Entity<AuditLog>(entity =>
         {
@@ -317,6 +322,14 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Details).HasMaxLength(2000);
             entity.Property(e => e.IpAddress).HasMaxLength(50);
             entity.Property(e => e.CreatedAt).IsRequired();
+
+        // Notification
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(e => e.IdNotification);
+            entity.Property(e => e.Message).HasMaxLength(500).IsRequired();
+            entity.HasOne(e => e.Utilisateur).WithMany().HasForeignKey(e => e.IdUtilisateur);
+
         });
 
         // Désactiver la suppression en cascade globalement (évite les erreurs SQL Server)
