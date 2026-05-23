@@ -322,6 +322,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Details).HasMaxLength(2000);
             entity.Property(e => e.IpAddress).HasMaxLength(50);
             entity.Property(e => e.CreatedAt).IsRequired();
+        });
 
         // Notification
         modelBuilder.Entity<Notification>(entity =>
