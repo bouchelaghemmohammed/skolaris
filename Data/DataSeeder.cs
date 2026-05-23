@@ -8,6 +8,11 @@ namespace Skolaris.Data
     {
         public static void Seed(ApplicationDbContext context)
         {
+            if (context.Programmes.Any())
+            {
+                return;
+            }
+
             var hasher = new PasswordHasher<Utilisateur>();
 
             // ===== UTILISATEURS =====
