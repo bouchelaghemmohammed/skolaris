@@ -29,19 +29,46 @@ namespace Skolaris.Data
             }
 
             // Enseignant
-            if (!context.Utilisateurs.Any(u => u.Email == "enseignant@gmail.com"))
+            if (!context.Utilisateurs.Any(u => u.Role == Role.ENSEIGNANT))
             {
-                var enseignant = new Utilisateur
+                var enseignantsData = new[]
                 {
-                    Nom = "Enseignant",
-                    Prenom = "Skolaris",
-                    Email = "enseignant@gmail.com",
-                    Role = Role.ENSEIGNANT,
-                    IsActive = true
+                    new { Prenom = "Jean", Nom = "Tremblay", Email = "jean.tremblay@gmail.com" },
+                    new { Prenom = "Marie", Nom = "Gagnon", Email = "marie.gagnon@gmail.com" },
+                    new { Prenom = "Patrick", Nom = "Roy", Email = "patrick.roy@gmail.com" },
+                    new { Prenom = "Sophie", Nom = "Bouchard", Email = "sophie.bouchard@gmail.com" },
+                    new { Prenom = "David", Nom = "Lefebvre", Email = "david.lefebvre@gmail.com" },
+                    new { Prenom = "Isabelle", Nom = "Morin", Email = "isabelle.morin@gmail.com" },
+                    new { Prenom = "Alexandre", Nom = "Gauthier", Email = "alexandre.gauthier@gmail.com" },
+                    new { Prenom = "Catherine", Nom = "Pelletier", Email = "catherine.pelletier@gmail.com" },
+                    new { Prenom = "Nicolas", Nom = "Bergeron", Email = "nicolas.bergeron@gmail.com" },
+                    new { Prenom = "Julie", Nom = "Caron", Email = "julie.caron@gmail.com" }
                 };
-                enseignant.MotDePasse = hasher.HashPassword(enseignant, "123456");
-                context.Utilisateurs.Add(enseignant);
-                context.SaveChanges();
+
+                foreach (var e in enseignantsData)
+                {
+                    var utilisateur = new Utilisateur
+                    {
+                        Nom = e.Nom,
+                        Prenom = e.Prenom,
+                        Email = e.Email,
+                        Role = Role.ENSEIGNANT,
+                        IsActive = true
+                    };
+
+                    utilisateur.MotDePasse = hasher.HashPassword(utilisateur, "123456");
+
+                    context.Utilisateurs.Add(utilisateur);
+                    context.SaveChanges();
+
+                    var enseignant = new Enseignant
+                    {
+                        IdUtilisateur = utilisateur.IdUtilisateur
+                    };
+
+                    context.Enseignants.Add(enseignant);
+                    context.SaveChanges();
+                }
             }
 
             // Élève 
@@ -213,26 +240,26 @@ namespace Skolaris.Data
                         new EmploiDuTemps
                         {
                             IdCoursOffert = coursOffert.IdCoursOffert,
-                            JourSemaine   = JourSemaine.Lundi,
-                            HeureDebut    = new TimeSpan(8, 30, 0),
-                            HeureFin      = new TimeSpan(11, 30, 0),
-                            Salle         = "B-201"
+                            JourSemaine = JourSemaine.Lundi,
+                            HeureDebut = new TimeSpan(8, 30, 0),
+                            HeureFin = new TimeSpan(11, 30, 0),
+                            Salle = "B-201"
                         },
                         new EmploiDuTemps
                         {
                             IdCoursOffert = coursOffert.IdCoursOffert,
-                            JourSemaine   = JourSemaine.Mercredi,
-                            HeureDebut    = new TimeSpan(13, 0, 0),
-                            HeureFin      = new TimeSpan(16, 0, 0),
-                            Salle         = "B-201"
+                            JourSemaine = JourSemaine.Mercredi,
+                            HeureDebut = new TimeSpan(13, 0, 0),
+                            HeureFin = new TimeSpan(16, 0, 0),
+                            Salle = "B-201"
                         },
                         new EmploiDuTemps
                         {
                             IdCoursOffert = coursOffert.IdCoursOffert,
-                            JourSemaine   = JourSemaine.Vendredi,
-                            HeureDebut    = new TimeSpan(9, 0, 0),
-                            HeureFin      = new TimeSpan(12, 0, 0),
-                            Salle         = "A-105"
+                            JourSemaine = JourSemaine.Vendredi,
+                            HeureDebut = new TimeSpan(9, 0, 0),
+                            HeureFin = new TimeSpan(12, 0, 0),
+                            Salle = "A-105"
                         }
                     );
                     context.SaveChanges();

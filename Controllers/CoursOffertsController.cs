@@ -32,7 +32,7 @@ namespace Skolaris.Controllers
                     groupeNom     = co.Groupe.Nom,
                     enseignantNom = co.Enseignant != null
                         ? co.Enseignant.Utilisateur.Prenom + " " + co.Enseignant.Utilisateur.Nom
-                        : "—"
+                        : "-"
                 })
                 .ToList();
 
