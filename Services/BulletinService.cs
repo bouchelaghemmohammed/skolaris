@@ -249,22 +249,6 @@ namespace Skolaris.Services
             return new EnvoiBulletinResult { Success = true, EmailDestinataire = email };
         }
 
-        // Aperçu HTML du bulletin (utilisé par /api/bulletins/{id}/preview pour visualisation navigateur)
-        public string? GetBulletinHtml(int idBulletin)
-        {
-            var bulletin = _context.Bulletins
-                .Include(b => b.Eleve).ThenInclude(e => e.Utilisateur)
-                .Include(b => b.Session).ThenInclude(s => s.AnneeScolaire)
-                .Include(b => b.DetailBulletins).ThenInclude(d => d.Note)
-                .Include(b => b.DetailBulletins).ThenInclude(d => d.CoursOffert).ThenInclude(co => co.Cours)
-                .FirstOrDefault(b => b.IdBulletin == idBulletin);
-
-            if (bulletin == null) return null;
-
-            var nomComplet = $"{bulletin.Eleve.Utilisateur.Prenom} {bulletin.Eleve.Utilisateur.Nom}";
-            return BuildBulletinHtml(bulletin, nomComplet);
-        }
-
         private string BuildBulletinHtml(Bulletin bulletin, string nomComplet)
         {
             // Regrouper les détails par cours pour afficher proprement
