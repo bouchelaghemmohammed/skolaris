@@ -26,7 +26,8 @@ namespace Skolaris.Controllers
                     .ThenInclude(c => c.Programme)
                 .Include(co => co.Session)
                 .Include(co => co.Enseignant)
-                .Include(co => co.Groupe) // Added
+                    .ThenInclude(e => e.Utilisateur)
+                .Include(co => co.Groupe)
                 .Select(co => new
                 {
                     IdCoursOffert = co.IdCoursOffert,
@@ -40,7 +41,10 @@ namespace Skolaris.Controllers
                     NomSession = co.Session.Libelle,
                     IdProgramme = co.Cours.IdProgramme,
                     NomProgramme = co.Cours.Programme.Nom,
-                    NomGroupe = co.Groupe.Nom // Added
+                    NomGroupe = co.Groupe.Nom,
+                    NomEnseignant = co.Enseignant != null
+                        ? co.Enseignant.Utilisateur.Prenom + " " + co.Enseignant.Utilisateur.Nom
+                        : "",
                 })
                 .ToList();
 
@@ -96,6 +100,8 @@ namespace Skolaris.Controllers
 
             coursOffert.IdCours = updatedCoursOffert.IdCours;
             coursOffert.IdSession = updatedCoursOffert.IdSession;
+            coursOffert.IdGroupe = updatedCoursOffert.IdGroupe;
+            coursOffert.IdEnseignant = updatedCoursOffert.IdEnseignant;
             coursOffert.ModeEnseignement = updatedCoursOffert.ModeEnseignement;
             // coursOffert.Actif = updatedCoursOffert.Actif;
 
