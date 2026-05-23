@@ -41,6 +41,8 @@ builder.Services.AddScoped<BulletinService>();
 builder.Services.AddScoped<GrilleEvaluationService>();
 builder.Services.AddScoped<MessagerieService>();
 builder.Services.AddScoped<SmsService>();
+builder.Services.AddScoped<AuditLogService>();
+builder.Services.AddScoped<EmploiDuTempsService>();
 
 // Limite upload: 10 Mo pour les pièces jointes de la messagerie
 builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(o =>
