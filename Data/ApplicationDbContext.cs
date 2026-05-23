@@ -36,6 +36,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<TauxHoraireEnseignant> TauxHorairesEnseignants { get; set; }
     public DbSet<PaiementEnseignant> PaiementsEnseignants { get; set; }
 
+    public DbSet<AuditLog> AuditLogs { get; set; }
+
+    public DbSet<Notification> Notifications { get; set; }
+
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -222,9 +227,14 @@ public class ApplicationDbContext : DbContext
         // EmploiDuTemps
         modelBuilder.Entity<EmploiDuTemps>(entity =>
         {
+            
             entity.HasKey(e => e.IdEmploi);
             entity.Property(e => e.JourSemaine).HasConversion<string>();
-            entity.HasOne(e => e.CoursOffert).WithMany(e => e.EmploisDuTemps).HasForeignKey(e => e.IdCoursOffert);
+            entity.Property(e => e.HeureDebut).IsRequired();
+            entity.Property(e => e.HeureFin).IsRequired();
+            entity.Property(e => e.Salle).HasMaxLength(50);
+            entity.Property(e => e.IsPublie).HasDefaultValue(false);
+            entity.HasOne(e => e.CoursOffert).WithMany(co => co.EmploisDuTemps).HasForeignKey(e => e.IdCoursOffert).OnDelete(DeleteBehavior.Cascade);
         });
 
         // Conversation
@@ -298,6 +308,29 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.Enseignant).WithMany(e => e.Paiements).HasForeignKey(e => e.IdEnseignant);
             entity.HasOne(e => e.Session).WithMany(e => e.PaiementsEnseignants).HasForeignKey(e => e.IdSession);
             entity.HasOne(e => e.TauxHoraire).WithMany(e => e.Paiements).HasForeignKey(e => e.IdTaux);
+        });
+
+
+        // AuditLog
+        modelBuilder.Entity<AuditLog>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.UserId).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.UserName).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Role).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Action).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Details).HasMaxLength(2000);
+            entity.Property(e => e.IpAddress).HasMaxLength(50);
+            entity.Property(e => e.CreatedAt).IsRequired();
+        });
+
+        // Notification
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(e => e.IdNotification);
+            entity.Property(e => e.Message).HasMaxLength(500).IsRequired();
+            entity.HasOne(e => e.Utilisateur).WithMany().HasForeignKey(e => e.IdUtilisateur);
+
         });
 
         // Désactiver la suppression en cascade globalement (évite les erreurs SQL Server)

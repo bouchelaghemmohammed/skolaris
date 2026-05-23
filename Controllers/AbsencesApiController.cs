@@ -83,6 +83,18 @@ namespace Skolaris.Controllers
             return Ok();
         }
 
+        // PUT: api/absences/{id}/statut — changer le statut (Approuvee / Refusee)
+        [HttpPut("{id}/statut")]
+        public IActionResult ChangerStatut(int id, [FromBody] ChangerStatutDto dto)
+        {
+            var statut = dto.Statut == "Approuvee"
+                ? Enums.StatutAbsence.Approuvee
+                : Enums.StatutAbsence.Refusee;
+            var result = _absenceService.ChangerStatut(id, statut);
+            if (!result) return NotFound();
+            return Ok();
+        }
+
         // POST: api/absences/{id}/explication — texte de justification soumis par l'élève
         [HttpPost("{id}/explication")]
         public IActionResult SetExplicationEleve(int id, [FromBody] ExplicationDto dto)
@@ -104,6 +116,13 @@ namespace Skolaris.Controllers
             if (!result)
                 return NotFound();
             return Ok();
+        }
+
+        // GET: api/absences/rapport?idEleve=&idGroupe=&idCoursOffert=
+        [HttpGet("rapport")]
+        public IActionResult GetRapport([FromQuery] int? idEleve, [FromQuery] int? idGroupe, [FromQuery] int? idCoursOffert)
+        {
+            return Ok(_absenceService.GetRapport(idEleve, idGroupe, idCoursOffert));
         }
 
         // DELETE: api/absences/{id}
