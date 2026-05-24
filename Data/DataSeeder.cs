@@ -38,6 +38,7 @@ namespace Skolaris.Data
             {
                 var enseignantsData = new[]
                 {
+                    new { Prenom = "Enseignant", Nom = "Skolaris", Email = "enseignant@gmail.com" },
                     new { Prenom = "Jean", Nom = "Tremblay", Email = "jean.tremblay@gmail.com" },
                     new { Prenom = "Marie", Nom = "Gagnon", Email = "marie.gagnon@gmail.com" },
                     new { Prenom = "Patrick", Nom = "Roy", Email = "patrick.roy@gmail.com" },
