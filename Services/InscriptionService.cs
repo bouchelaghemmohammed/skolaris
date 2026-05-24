@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Skolaris.Data;
 using Skolaris.Models;
 
@@ -36,6 +37,19 @@ namespace Skolaris.Services
         {
             return _context.Inscriptions
                 .Where(i => i.IdCoursOffert == coursOffertId)
+
+                .Include(i => i.Eleve)
+                    .ThenInclude(e => e.Utilisateur)
+
+                .Include(i => i.CoursOffert)
+                    .ThenInclude(co => co.Cours)
+
+                .Include(i => i.CoursOffert)
+                    .ThenInclude(co => co.Groupe)
+
+                .Include(i => i.CoursOffert)
+                    .ThenInclude(co => co.Session)
+
                 .ToList();
         }
 

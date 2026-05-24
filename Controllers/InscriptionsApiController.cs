@@ -54,6 +54,39 @@ namespace Skolaris.Controllers
             return Ok(_inscriptionService.GetInscriptionsByCoursOffert(coursOffertId));
         }
 
+        // GET: /api/inscriptions/cours-details/{coursOffertId}
+        [HttpGet("cours-details/{coursOffertId}")]
+        public IActionResult GetCoursDetails(int coursOffertId)
+        {
+            var inscriptions = _inscriptionService
+                .GetInscriptionsByCoursOffert(coursOffertId)
+                .Select(i => new
+                {
+                    IdInscription = i.IdInscription,
+
+                    Eleve = new
+                    {
+                        i.Eleve.IdEleve,
+                        i.Eleve.Matricule,
+                        Nom = i.Eleve.Utilisateur.Nom,
+                        Prenom = i.Eleve.Utilisateur.Prenom,
+                        Email = i.Eleve.Utilisateur.Email
+                    },
+
+                    CoursOffert = new
+                    {
+                        i.CoursOffert.IdCoursOffert,
+                        NomCours = i.CoursOffert.Cours.Nom,
+                        NomGroupe = i.CoursOffert.Groupe.Nom,
+                        Session = i.CoursOffert.Session.Libelle
+                    },
+
+                    i.DateInscription
+                });
+
+            return Ok(inscriptions);
+        }
+
         // POST: api/inscriptions — ADM-07
         [HttpPost]
         public IActionResult CreateInscription([FromBody] Inscription inscription)
