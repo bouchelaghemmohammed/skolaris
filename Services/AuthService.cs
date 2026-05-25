@@ -34,6 +34,20 @@ namespace Skolaris.Services
 
             if (result == PasswordVerificationResult.Failed)
                 return null;
+           
+            _context.AuditLogs.Add(new AuditLog
+            {
+                UserId = user.IdUtilisateur.ToString(),
+                UserName = $"{user.Prenom} {user.Nom}",
+                Role = user.Role.ToString(),
+                Action = "Connexion",
+                Details = $"Connexion réussie pour {user.Email}",
+                IpAddress = "localhost",
+                CreatedAt = DateTime.Now
+            });
+
+            _context.SaveChanges();
+
 
             return user;
         }

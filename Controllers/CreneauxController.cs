@@ -14,7 +14,6 @@ namespace Skolaris.Controllers
             _service = service;
         }
 
-        // GET
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -22,88 +21,94 @@ namespace Skolaris.Controllers
             return Ok(data);
         }
 
-        // GET BY ID
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
             var data = await _service.GetByIdAsync(id);
 
             if (data == null)
-            {
                 return NotFound();
-            }
 
             return Ok(data);
         }
 
-        // POST
         [HttpPost]
         public async Task<IActionResult> Create(EmploiDuTempsCreateDto dto)
         {
             var result = await _service.CreateAsync(dto);
 
             if (!result.Success)
-            {
                 return BadRequest(result.Message);
-            }
 
             return Ok(result.Message);
         }
 
-        // PUT
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, EmploiDuTempsCreateDto dto)
         {
             var result = await _service.UpdateAsync(id, dto);
 
             if (!result.Success)
-            {
                 return BadRequest(result.Message);
-            }
 
             return Ok(result.Message);
         }
 
-        // DELETE
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             var deleted = await _service.DeleteAsync(id);
 
             if (!deleted)
-            {
                 return NotFound();
-            }
 
             return Ok("Créneau supprimé.");
         }
 
-        // PUBLISH
         [HttpPatch("{id}/publier")]
         public async Task<IActionResult> Publier(int id)
         {
             var result = await _service.PublierAsync(id);
 
             if (!result)
-            {
                 return NotFound();
-            }
 
             return Ok("Créneau publié.");
         }
 
-        // UNPUBLISH
         [HttpPatch("{id}/depublier")]
         public async Task<IActionResult> Depublier(int id)
         {
             var result = await _service.DepublierAsync(id);
 
             if (!result)
-            {
                 return NotFound();
-            }
 
             return Ok("Créneau dépublié.");
+        }
+
+        [HttpPatch("publier-tout")]
+        public async Task<IActionResult> PublierTout()
+        {
+            await _service.PublierToutAsync();
+
+            return Ok("Tous les créneaux ont été publiés.");
+        }
+
+        [HttpGet("eleve/{idUtilisateur}")]
+        public async Task<IActionResult> GetHoraireEleve(int idUtilisateur)
+        {
+            var data = await _service.GetHoraireEleveAsync(idUtilisateur);
+
+            return Ok(data);
+        }
+
+        [HttpGet("enseignant/{idUtilisateur}")]
+        public async Task<IActionResult> GetHoraireEnseignant(int idUtilisateur)
+        {
+            var data = await _service.GetHoraireEnseignantAsync(idUtilisateur);
+
+            return Ok(data);
         }
     }
 }

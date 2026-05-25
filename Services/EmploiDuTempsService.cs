@@ -14,8 +14,7 @@ namespace Skolaris.Services
             _context = context;
         }
 
-        // Retourne tous les créneaux
-        public async Task<List<EmploiDuTemps>> GetAllAsync()
+        public async Task<List<object>> GetAllAsync()
         {
             return await _context.EmploisDuTemps
                 .Include(e => e.CoursOffert)
@@ -27,55 +26,71 @@ namespace Skolaris.Services
                         .ThenInclude(ens => ens!.Utilisateur)
                 .OrderBy(e => e.JourSemaine)
                 .ThenBy(e => e.HeureDebut)
-                .ToListAsync();
+                .Select(e => new
+                {
+                    id = e.IdEmploi,
+                    coursOffertId = e.IdCoursOffert,
+                    coursNom = e.CoursOffert.Cours.Nom,
+                    groupeId = e.CoursOffert.IdGroupe,
+                    groupeNom = e.CoursOffert.Groupe.Nom,
+                    enseignantNom =
+                        e.CoursOffert.Enseignant.Utilisateur.Prenom + " " +
+                        e.CoursOffert.Enseignant.Utilisateur.Nom,
+                    jourSemaine = e.JourSemaine.ToString(),
+                    heureDebut = e.HeureDebut.ToString(@"hh\:mm"),
+                    heureFin = e.HeureFin.ToString(@"hh\:mm"),
+                    salle = e.Salle,
+                    isPublie = e.IsPublie
+                })
+                .ToListAsync<object>();
         }
 
-        // Retourne un créneau par ID
-        public async Task<EmploiDuTemps?> GetByIdAsync(int id)
+        public async Task<object?> GetByIdAsync(int id)
         {
             return await _context.EmploisDuTemps
                 .Include(e => e.CoursOffert)
-                .FirstOrDefaultAsync(e => e.IdEmploi == id);
+                    .ThenInclude(co => co.Cours)
+                .Include(e => e.CoursOffert)
+                    .ThenInclude(co => co.Groupe)
+                .Where(e => e.IdEmploi == id)
+                .Select(e => new
+                {
+                    id = e.IdEmploi,
+                    coursOffertId = e.IdCoursOffert,
+                    coursNom = e.CoursOffert.Cours.Nom,
+                    groupeId = e.CoursOffert.IdGroupe,
+                    groupeNom = e.CoursOffert.Groupe.Nom,
+                    jourSemaine = e.JourSemaine.ToString(),
+                    heureDebut = e.HeureDebut.ToString(@"hh\:mm"),
+                    heureFin = e.HeureFin.ToString(@"hh\:mm"),
+                    salle = e.Salle,
+                    isPublie = e.IsPublie
+                })
+                .FirstOrDefaultAsync();
         }
 
-        // Ajouter un créneau
         public async Task<(bool Success, string Message)> CreateAsync(EmploiDuTempsCreateDto dto)
         {
-            // Vérifie jour valide
             if (!Enum.IsDefined(typeof(JourSemaine), dto.JourSemaine))
-            {
                 return (false, "Jour invalide.");
-            }
 
-            // Vérifie cours offert
             var coursOffert = await _context.CoursOfferts
                 .FirstOrDefaultAsync(c => c.IdCoursOffert == dto.CoursOffertId);
 
             if (coursOffert == null)
-            {
                 return (false, "Cours offert introuvable.");
-            }
 
-            // Vérifie format heure
             if (!TimeSpan.TryParse(dto.HeureDebut, out var debut))
-            {
                 return (false, "Heure début invalide.");
-            }
 
             if (!TimeSpan.TryParse(dto.HeureFin, out var fin))
-            {
                 return (false, "Heure fin invalide.");
-            }
 
-            // Vérifie ordre des heures
             if (debut >= fin)
-            {
                 return (false, "Heure début doit être avant heure fin.");
-            }
 
             var jour = (JourSemaine)dto.JourSemaine;
 
-            // Détection conflits
             bool conflit = await _context.EmploisDuTemps
                 .Include(e => e.CoursOffert)
                 .AnyAsync(e =>
@@ -90,9 +105,7 @@ namespace Skolaris.Services
                 );
 
             if (conflit)
-            {
                 return (false, "Conflit d'horaire détecté.");
-            }
 
             var emploi = new EmploiDuTemps
             {
@@ -110,38 +123,30 @@ namespace Skolaris.Services
             return (true, "Créneau ajouté avec succès.");
         }
 
-        // Modifier un créneau
         public async Task<(bool Success, string Message)> UpdateAsync(int id, EmploiDuTempsCreateDto dto)
         {
             var emploi = await _context.EmploisDuTemps.FindAsync(id);
 
             if (emploi == null)
-            {
                 return (false, "Créneau introuvable.");
-            }
+
+            if (!Enum.IsDefined(typeof(JourSemaine), dto.JourSemaine))
+                return (false, "Jour invalide.");
 
             var coursOffert = await _context.CoursOfferts
                 .FirstOrDefaultAsync(c => c.IdCoursOffert == dto.CoursOffertId);
 
             if (coursOffert == null)
-            {
                 return (false, "Cours offert introuvable.");
-            }
 
             if (!TimeSpan.TryParse(dto.HeureDebut, out var debut))
-            {
                 return (false, "Heure début invalide.");
-            }
 
             if (!TimeSpan.TryParse(dto.HeureFin, out var fin))
-            {
                 return (false, "Heure fin invalide.");
-            }
 
             if (debut >= fin)
-            {
                 return (false, "Heure début doit être avant heure fin.");
-            }
 
             var jour = (JourSemaine)dto.JourSemaine;
 
@@ -160,9 +165,7 @@ namespace Skolaris.Services
                 );
 
             if (conflit)
-            {
                 return (false, "Conflit d'horaire détecté.");
-            }
 
             emploi.IdCoursOffert = dto.CoursOffertId;
             emploi.JourSemaine = jour;
@@ -175,15 +178,12 @@ namespace Skolaris.Services
             return (true, "Créneau modifié avec succès.");
         }
 
-        // Supprimer
         public async Task<bool> DeleteAsync(int id)
         {
             var emploi = await _context.EmploisDuTemps.FindAsync(id);
 
             if (emploi == null)
-            {
                 return false;
-            }
 
             _context.EmploisDuTemps.Remove(emploi);
             await _context.SaveChangesAsync();
@@ -191,42 +191,110 @@ namespace Skolaris.Services
             return true;
         }
 
-        // Publier
         public async Task<bool> PublierAsync(int id)
         {
             var emploi = await _context.EmploisDuTemps.FindAsync(id);
 
             if (emploi == null)
-            {
                 return false;
-            }
 
             emploi.IsPublie = true;
-
             await _context.SaveChangesAsync();
 
             return true;
         }
 
-        // Dépublier
         public async Task<bool> DepublierAsync(int id)
         {
             var emploi = await _context.EmploisDuTemps.FindAsync(id);
 
             if (emploi == null)
-            {
                 return false;
-            }
 
             emploi.IsPublie = false;
-
             await _context.SaveChangesAsync();
 
             return true;
         }
+
+        public async Task PublierToutAsync()
+        {
+            var emplois = await _context.EmploisDuTemps.ToListAsync();
+
+            foreach (var e in emplois)
+                e.IsPublie = true;
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<object>> GetHoraireEleveAsync(int idUtilisateur)
+        {
+            var eleve = await _context.Eleves
+                .FirstOrDefaultAsync(e => e.IdUtilisateur == idUtilisateur);
+
+            if (eleve == null)
+                return new();
+
+            return await _context.EmploisDuTemps
+                .Include(e => e.CoursOffert)
+                    .ThenInclude(co => co.Cours)
+                .Include(e => e.CoursOffert)
+                    .ThenInclude(co => co.Groupe)
+                .Include(e => e.CoursOffert)
+                    .ThenInclude(co => co.Enseignant)
+                        .ThenInclude(ens => ens!.Utilisateur)
+                .Where(e =>
+                    e.IsPublie &&
+                    e.CoursOffert.IdGroupe == eleve.IdGroupe)
+                .OrderBy(e => e.JourSemaine)
+                .ThenBy(e => e.HeureDebut)
+                .Select(e => new
+                {
+                    id = e.IdEmploi,
+                    coursNom = e.CoursOffert.Cours.Nom,
+                    enseignantNom =
+                        e.CoursOffert.Enseignant.Utilisateur.Prenom + " " +
+                        e.CoursOffert.Enseignant.Utilisateur.Nom,
+                    jourSemaine = e.JourSemaine.ToString(),
+                    heureDebut = e.HeureDebut.ToString(@"hh\:mm"),
+                    heureFin = e.HeureFin.ToString(@"hh\:mm"),
+                    salle = e.Salle
+                })
+                .ToListAsync<object>();
+        }
+
+        public async Task<List<object>> GetHoraireEnseignantAsync(int idUtilisateur)
+        {
+            var enseignant = await _context.Enseignants
+                .FirstOrDefaultAsync(e => e.IdUtilisateur == idUtilisateur);
+
+            if (enseignant == null)
+                return new();
+
+            return await _context.EmploisDuTemps
+                .Include(e => e.CoursOffert)
+                    .ThenInclude(co => co.Cours)
+                .Include(e => e.CoursOffert)
+                    .ThenInclude(co => co.Groupe)
+                .Where(e =>
+                    e.IsPublie &&
+                    e.CoursOffert.IdEnseignant == enseignant.IdEnseignant)
+                .OrderBy(e => e.JourSemaine)
+                .ThenBy(e => e.HeureDebut)
+                .Select(e => new
+                {
+                    id = e.IdEmploi,
+                    coursNom = e.CoursOffert.Cours.Nom,
+                    groupeNom = e.CoursOffert.Groupe.Nom,
+                    jourSemaine = e.JourSemaine.ToString(),
+                    heureDebut = e.HeureDebut.ToString(@"hh\:mm"),
+                    heureFin = e.HeureFin.ToString(@"hh\:mm"),
+                    salle = e.Salle
+                })
+                .ToListAsync<object>();
+        }
     }
 
-    // DTO
     public class EmploiDuTempsCreateDto
     {
         public int CoursOffertId { get; set; }
