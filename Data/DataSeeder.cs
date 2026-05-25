@@ -34,6 +34,7 @@ namespace Skolaris.Data
             }
 
             // Enseignant
+
             if (!context.Utilisateurs.Any(u => u.Role == Role.ENSEIGNANT))
             {
                 var enseignantsData = new[]
