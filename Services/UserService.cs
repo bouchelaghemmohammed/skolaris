@@ -23,7 +23,33 @@ namespace Skolaris.Services
                     Nom = u.Prenom + " " + u.Nom,
                     Email = u.Email,
                     Role = u.Role.ToString(),
-                    IsActive = u.IsActive
+                    IsActive = u.IsActive,
+                    Telephone = u.Telephone
+                })
+                .ToList();
+        }
+
+        public bool UpdateTelephone(int id, string? telephone)
+        {
+            var user = _context.Utilisateurs.FirstOrDefault(u => u.IdUtilisateur == id);
+            if (user == null) return false;
+            user.Telephone = string.IsNullOrWhiteSpace(telephone) ? null : telephone.Trim();
+            _context.SaveChanges();
+            return true;
+        }
+
+        public List<UserListViewModel> GetByGroupe(int idGroupe)
+        {
+            return _context.Eleves
+                .Where(e => e.IdGroupe == idGroupe)
+                .Select(e => new UserListViewModel
+                {
+                    Id = e.Utilisateur.IdUtilisateur,
+                    Nom = e.Utilisateur.Prenom + " " + e.Utilisateur.Nom,
+                    Email = e.Utilisateur.Email,
+                    Role = "ELEVE",
+                    IsActive = e.Utilisateur.IsActive,
+                    Telephone = e.Utilisateur.Telephone
                 })
                 .ToList();
         }
@@ -79,7 +105,7 @@ namespace Skolaris.Services
             return true;
         }
 
-        public (bool Success, string Error) CreateUser(string prenom, string nom, string email, string role, string motDePasse)
+        public (bool Success, string Error) CreateUser(string prenom, string nom, string email, string role, string motDePasse, string? telephone = null)
         {
             if (string.IsNullOrWhiteSpace(nom) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(motDePasse))
                 return (false, "Champs obligatoires manquants.");
@@ -99,7 +125,8 @@ namespace Skolaris.Services
                 Nom = nom.Trim(),
                 Email = email.Trim(),
                 Role = roleEnum,
-                IsActive = true
+                IsActive = true,
+                Telephone = string.IsNullOrWhiteSpace(telephone) ? null : telephone.Trim()
             };
 
             var hasher = new Microsoft.AspNetCore.Identity.PasswordHasher<Utilisateur>();

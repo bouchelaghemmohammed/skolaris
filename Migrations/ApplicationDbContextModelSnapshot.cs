@@ -926,6 +926,10 @@ namespace Skolaris.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Telephone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.HasKey("IdUtilisateur");
 
                     b.HasIndex("Email")

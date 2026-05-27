@@ -24,7 +24,7 @@ namespace Skolaris.Controllers
         public IActionResult CreateUser([FromBody] CreateUserRequest request)
         {
             var (success, error) = _userService.CreateUser(
-                request.Prenom, request.Nom, request.Email, request.Role, request.MotDePasse);
+                request.Prenom, request.Nom, request.Email, request.Role, request.MotDePasse, request.Telephone);
             if (!success)
                 return BadRequest(error);
             return Ok();
@@ -51,6 +51,25 @@ namespace Skolaris.Controllers
 
             return Ok();
         }
+        [HttpPatch("{id}/telephone")]
+        public IActionResult UpdateTelephone(int id, [FromBody] UpdateTelephoneRequest request)
+        {
+            var result = _userService.UpdateTelephone(id, request.Telephone);
+            if (!result)
+                return NotFound();
+            return Ok();
+        }
+
+        [HttpGet("by-groupe/{idGroupe}")]
+        public IActionResult GetByGroupe(int idGroupe)
+        {
+            return Ok(_userService.GetByGroupe(idGroupe));
+        }
+    }
+
+    public class UpdateTelephoneRequest
+    {
+        public string? Telephone { get; set; }
     }
 
     public class ChangeRoleRequest
@@ -65,5 +84,6 @@ namespace Skolaris.Controllers
         public string Email { get; set; } = "";
         public string Role { get; set; } = "ELEVE";
         public string MotDePasse { get; set; } = "";
+        public string? Telephone { get; set; }
     }
 }
