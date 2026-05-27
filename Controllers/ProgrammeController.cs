@@ -77,19 +77,32 @@ namespace Skolaris.Controllers
 
 
 		// DELETE: api/Programme/{id}
-		[HttpDelete ("{id}")]
-		public IActionResult Delete(int id)
-		{
-			var programme = _context.Programmes.Find(id);
+[HttpDelete("{id}")]
+public IActionResult Delete(int id)
+{
+    var programme = _context.Programmes.Find(id);
 
-			if (programme == null)
-				return NotFound();
+    if (programme == null)
+        return NotFound("Programme introuvable.");
 
-			_context.Programmes.Remove(programme);
-			_context.SaveChanges();
+    bool aDesCoursLies = _context.Cours.Any(c => c.IdProgramme == id);
+    bool aDesGroupesLies = _context.Groupes.Any(g => g.IdProgramme == id);
 
-			return Ok();
-		}
+    if (aDesCoursLies || aDesGroupesLies)
+        return Conflict("Impossible de supprimer ce programme : il a des cours ou des groupes liés.");
+
+    try
+    {
+        _context.Programmes.Remove(programme);
+        _context.SaveChanges();
+
+        return Ok("Programme supprimé avec succès.");
+    }
+    catch (Microsoft.EntityFrameworkCore.DbUpdateException)
+    {
+        return Conflict("Impossible de supprimer ce programme : il est lié à d'autres données.");
+    }
+}
 	}
 }
 
