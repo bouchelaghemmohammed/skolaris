@@ -13,6 +13,7 @@ namespace Skolaris.Models
         public bool IsActive { get; set; } = true;
         public string? ResetPasswordToken { get; set; }
         public DateTime? ResetPasswordTokenExpiry { get; set; }
+        public string? Telephone { get; set; }
 
         // Navigation
         public Enseignant? Enseignant { get; set; }

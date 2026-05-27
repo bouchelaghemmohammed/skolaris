@@ -39,17 +39,7 @@ namespace Skolaris.Data
             {
                 var enseignantsData = new[]
                 {
-                    new { Prenom = "Enseignant", Nom = "Skolaris", Email = "enseignant@gmail.com" },
-                    new { Prenom = "Jean", Nom = "Tremblay", Email = "jean.tremblay@gmail.com" },
-                    new { Prenom = "Marie", Nom = "Gagnon", Email = "marie.gagnon@gmail.com" },
-                    new { Prenom = "Patrick", Nom = "Roy", Email = "patrick.roy@gmail.com" },
-                    new { Prenom = "Sophie", Nom = "Bouchard", Email = "sophie.bouchard@gmail.com" },
-                    new { Prenom = "David", Nom = "Lefebvre", Email = "david.lefebvre@gmail.com" },
-                    new { Prenom = "Isabelle", Nom = "Morin", Email = "isabelle.morin@gmail.com" },
-                    new { Prenom = "Alexandre", Nom = "Gauthier", Email = "alexandre.gauthier@gmail.com" },
-                    new { Prenom = "Catherine", Nom = "Pelletier", Email = "catherine.pelletier@gmail.com" },
-                    new { Prenom = "Nicolas", Nom = "Bergeron", Email = "nicolas.bergeron@gmail.com" },
-                    new { Prenom = "Julie", Nom = "Caron", Email = "julie.caron@gmail.com" }
+                    new { Prenom = "Enseignant", Nom = "Skolaris", Email = "enseignant@gmail.com" }
                 };
 
                 foreach (var e in enseignantsData)

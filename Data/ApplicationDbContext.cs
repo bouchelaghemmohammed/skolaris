@@ -57,6 +57,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Role).HasConversion<string>();
             entity.Property(e => e.ResetPasswordToken).HasMaxLength(128);
             entity.Property(e => e.ResetPasswordTokenExpiry).IsRequired(false);
+            entity.Property(e => e.Telephone).HasMaxLength(20).IsRequired(false);
         });
 
         // Ecole
@@ -227,7 +228,7 @@ public class ApplicationDbContext : DbContext
         // EmploiDuTemps
         modelBuilder.Entity<EmploiDuTemps>(entity =>
         {
-            
+
             entity.HasKey(e => e.IdEmploi);
             entity.Property(e => e.JourSemaine).HasConversion<string>();
             entity.Property(e => e.HeureDebut).IsRequired();
