@@ -127,19 +127,43 @@ namespace Skolaris.Controllers
             return Ok(coursOffert);
         }
 
-        // DELETE
+        // DELETE: api/CoursOffert/{id}
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
             var coursOffert = _context.CoursOfferts.Find(id);
 
             if (coursOffert == null)
-                return NotFound();
+                return NotFound("Cours offert introuvable.");
 
-            _context.CoursOfferts.Remove(coursOffert);
-            _context.SaveChanges();
+            bool aDesInscriptions = _context.Inscriptions.Any(i => i.IdCoursOffert == id);
+            bool aDesNotes = _context.Notes.Any(n => n.IdCoursOffert == id);
+            bool aDesAbsences = _context.Absences.Any(a => a.IdCoursOffert == id);
+            bool aDesCreneaux = _context.EmploisDuTemps.Any(e => e.IdCoursOffert == id);
+            bool aDesDetailsBulletin = _context.DetailBulletins.Any(d => d.IdCoursOffert == id);
+            bool aUneGrille = _context.GrillesEvaluation.Any(g => g.IdCoursOffert == id);
 
-            return Ok();
+            if (aDesInscriptions ||
+                aDesNotes ||
+                aDesAbsences ||
+                aDesCreneaux ||
+                aDesDetailsBulletin ||
+                aUneGrille)
+            {
+                return Conflict("Impossible de supprimer ce cours offert : il est associé à des inscriptions, notes, absences, horaires, bulletins ou grilles d'évaluation.");
+            }
+
+            try
+            {
+                _context.CoursOfferts.Remove(coursOffert);
+                _context.SaveChanges();
+
+                return Ok("Cours offert supprimé avec succès.");
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException)
+            {
+                return Conflict("Impossible de supprimer ce cours offert : il est associé à d'autres données.");
+            }
         }
     }
 }
