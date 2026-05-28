@@ -33,8 +33,10 @@ namespace Skolaris.Services
         {
             var user = _context.Utilisateurs.FirstOrDefault(u => u.IdUtilisateur == id);
             if (user == null) return false;
+
             user.Telephone = string.IsNullOrWhiteSpace(telephone) ? null : telephone.Trim();
             _context.SaveChanges();
+
             return true;
         }
 
@@ -62,6 +64,7 @@ namespace Skolaris.Services
 
             user.IsActive = !user.IsActive;
             _context.SaveChanges();
+
             return true;
         }
 
@@ -75,6 +78,7 @@ namespace Skolaris.Services
 
             user.Role = roleEnum;
             _context.SaveChanges();
+
             return true;
         }
 
@@ -94,6 +98,7 @@ namespace Skolaris.Services
             // Vérifier que l'email n'est pas déjà utilisé par un autre utilisateur
             var emailPrisParAutre = _context.Utilisateurs
                 .Any(u => u.Email.ToLower() == email.Trim().ToLower() && u.IdUtilisateur != id);
+
             if (emailPrisParAutre)
                 return false;
 
@@ -102,13 +107,24 @@ namespace Skolaris.Services
             user.Email = email.Trim();
 
             _context.SaveChanges();
+
             return true;
         }
 
-        public (bool Success, string Error) CreateUser(string prenom, string nom, string email, string role, string motDePasse, string? telephone = null)
+        public (bool Success, string Error) CreateUser(
+            string prenom,
+            string nom,
+            string email,
+            string role,
+            string motDePasse,
+            string? telephone = null)
         {
-            if (string.IsNullOrWhiteSpace(nom) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(motDePasse))
+            if (string.IsNullOrWhiteSpace(nom) ||
+                string.IsNullOrWhiteSpace(email) ||
+                string.IsNullOrWhiteSpace(motDePasse))
+            {
                 return (false, "Champs obligatoires manquants.");
+            }
 
             if (!email.Contains("@"))
                 return (false, "Email invalide.");
@@ -134,6 +150,22 @@ namespace Skolaris.Services
 
             _context.Utilisateurs.Add(user);
             _context.SaveChanges();
+
+            if (roleEnum == Role.ELEVE)
+            {
+                var eleve = new Eleve
+                {
+                    IdUtilisateur = user.IdUtilisateur,
+                    Matricule = $"ELV-{user.IdUtilisateur:D4}",
+                    IdProgramme = 1,
+                    IdGroupe = 1,
+                    IdNiveau = 1
+                };
+
+                _context.Eleves.Add(eleve);
+                _context.SaveChanges();
+            }
+
             return (true, "");
         }
     }

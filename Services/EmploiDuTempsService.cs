@@ -245,7 +245,9 @@ namespace Skolaris.Services
                         .ThenInclude(ens => ens!.Utilisateur)
                 .Where(e =>
                     e.IsPublie &&
-                    e.CoursOffert.IdGroupe == eleve.IdGroupe)
+                    _context.Inscriptions.Any(i =>
+                        i.IdEleve == eleve.IdEleve &&
+                        i.IdCoursOffert == e.IdCoursOffert))
                 .OrderBy(e => e.JourSemaine)
                 .ThenBy(e => e.HeureDebut)
                 .Select(e => new
